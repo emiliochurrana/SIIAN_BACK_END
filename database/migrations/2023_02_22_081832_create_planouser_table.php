@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('planouser', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_user');
+            $table->foreignId('id_user')->constrained('users');
             $table->string('nome_user');
             $table->string('tipo_plano');
             $table->timestamps();

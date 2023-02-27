@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('tipo_imovel');
             $table->string('infraestrutura');
             $table->string('endereco');
+            $table->string('paragem');
+            $table->float('distancia_paragem');
+            $table->string('meio_locomocao');
             $table->string('num_cadastro');
             $table->string('tipo_infraestrutura');
             $table->integer('num_quarto');
@@ -40,10 +43,20 @@ return new class extends Migration
             $table->string('seguranca');
             $table->string('parqueamento');
             $table->string('garagem');
-            $table->string('fotografias');
-            $table->string('link_youtube');
+            $table->string('imagem');
+            $table->string('video');
             $table->string('titulo_anuncio');
             $table->text('descricao');
+            $table->float('preco_mensal');
+            $table->float('preco_negociavel');
+            $table->text('preco_mensal_extenso');
+            $table->float('taxa_mensal');
+            $table->float('pre_pagamento');
+            $table->float('%_cliente');
+            $table->float('%_agente');
+            $table->integer('telefone1');
+            $table->integer('telefone2');
+            $table->integer('whatsapp');
             $table->timestamps();
         });
     }

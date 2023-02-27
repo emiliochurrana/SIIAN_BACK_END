@@ -15,11 +15,14 @@ return new class extends Migration
     {
         Schema::create('publicidade', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('id_plano')->constrained('planouser');
             $table->string('tipo_publicidade');
             $table->string('titulo');
             $table->string('imagem');
             $table->text('descricao');
             $table->string('endereco');
+            $table->integer('tempo_pago');
+            $table->float('total_pago');
             $table->timestamps();
         });
     }

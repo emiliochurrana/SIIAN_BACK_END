@@ -15,13 +15,12 @@ return new class extends Migration
     {
         Schema::create('construtora', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_user');
-           // $table->string('nome');
+            $table->foreignId('id_user')->constrained('users');
             $table->string('doc_verificacao');
             $table->text('sobre');
             $table->string('ano_criacao');
             $table->integer('telefone');
-            $table->integer('id_anuncio');
+            $table->foreignId('id_anuncio')->constrained('anuncio');
             $table->timestamps();
         });
     }

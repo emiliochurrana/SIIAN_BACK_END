@@ -15,12 +15,12 @@ return new class extends Migration
     {
         Schema::create('proprietario', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_user');
+            $table->foreignId('id_user')->constrained('users');
             $table->string('doc_identificacao');
             $table->string('data_nascimento');
             $table->integer('telefone');
             $table->string('endereco');
-            $table->integer('id_anuncio');
+            $table->foreignId('id_anuncio')->constrained('anuncio');
             $table->timestamps();
         });
     }

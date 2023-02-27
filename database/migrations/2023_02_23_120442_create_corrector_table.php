@@ -15,14 +15,13 @@ return new class extends Migration
     {
         Schema::create('corrector', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_user');
-            //$table->string('nome');
+            $table->foreignId('id_user')->constrained('users');
             $table->string('doc_verificacao');
             $table->string('especializacao');
             $table->string('ano_experiencia');
             $table->string('endereco');
             $table->text('sobre');
-            $table->integer('id_anuncio');
+            $table->foreignId('id_anuncio')->constrained('anuncio');
             $table->timestamps();
         });
     }
