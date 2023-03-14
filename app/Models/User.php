@@ -23,6 +23,10 @@ class User extends Authenticatable
         'password',
     ];
 
+    public function Proprietario(){
+        return $this->hashMany('App\Models\Proprietario'); 
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
