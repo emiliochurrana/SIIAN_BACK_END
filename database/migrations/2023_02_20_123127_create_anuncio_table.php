@@ -57,6 +57,7 @@ return new class extends Migration
             $table->integer('telefone1');
             $table->integer('telefone2');
             $table->integer('whatsapp');
+            $table->foreignId('id_user')->constrained('users');
             $table->timestamps();
         });
     }

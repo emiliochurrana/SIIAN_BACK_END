@@ -19,12 +19,17 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username', 
         'email',
         'password',
     ];
 
-    public function Proprietario(){
+    public function proprietario(){
         return $this->hashMany('App\Models\Proprietario'); 
+    }
+
+    public function anuncio(){
+        return $this->hashMany('App\Models\Anuncio');
     }
 
     /**

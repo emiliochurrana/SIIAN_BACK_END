@@ -18,17 +18,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+//GET
+Route::get('/usuario/proprietarios', [UserController::class, 'indexProprietario'])->name('proprietarioview');
+Route::get('/proprietario', [UserController::class, 'createProprietario'])->name('newproprietario');
+Route::get('/usuario/editproprietario/{id}', [UserController::class, 'editProprietario'])->name('editproprietario');
+Route::get('/usuario/showproprietario/{id}', [UserController::class, 'showProprietario'])->name('showproprietario');
 
 //POST
-Route::post('/usuario/novo', [UserController::class], 'storeProprietario')->name('users.storeProprietario');
-
-//GET
-Route::get('/usuario/proprietario', [UserController::class], 'indexProprietario')->name('users.listProprietario');
-
+Route::post('/usuario/proprietario', [UserController::class, 'storeProprietario'])->name('proprietarioview');
 
 //PUT
-Route::put('/usuario/edit/{user}', [UserController::class], 'editProprietario')->name('users.editProprietario');
+Route::put('/usuario/updateproprietario/{id}', [UserController::class, 'updateProprietario'])->name('proprietarioview');
 
 
 //DELETE
-Route::delete('/usuario/proprietario/{user}', [UserController::class], 'destroyProprietario')->name('users.destroyProprietario');
+Route::delete('/usuario/deleteproprietario/{id}', [UserController::class, 'destroyProprietario'])->name('proprietarioview');
