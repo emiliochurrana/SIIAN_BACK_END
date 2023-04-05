@@ -13,11 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('planouser', function (Blueprint $table) {
+        Schema::create('correctoras', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_user')->constrained('users');
-            $table->string('nome_user');
-            $table->string('tipo_plano');
+            $table->string('doc_verificacao');
+            $table->string('especializacao');
+            $table->string('ano_experiencia');
+            $table->string('endereco');
+            $table->text('sobre');
             $table->timestamps();
         });
     }
@@ -29,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('planouser');
+        Schema::dropIfExists('correctoras');
     }
 };

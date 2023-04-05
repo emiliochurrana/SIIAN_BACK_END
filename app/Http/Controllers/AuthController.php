@@ -13,7 +13,7 @@ class AuthController extends Controller
     //
     public function login(Request $request)
         {
-          $userLog = User::all()->where('username', '=', $request->input('username'))->first();
+          $userLog = User::all()->where('email', '=', $request->input('email'))->first();
           if($userLog){
             if($userLog->tipo_user == 'proprietario'){
                 $credenciais = [

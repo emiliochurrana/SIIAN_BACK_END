@@ -13,15 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('corrector', function (Blueprint $table) {
+        Schema::create('likes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_user')->constrained('users');
-            $table->string('doc_verificacao');
-            $table->string('especializacao');
-            $table->string('ano_experiencia');
-            $table->string('endereco');
-            $table->text('sobre');
-            $table->foreignId('id_anuncio')->constrained('anuncio');
+            $table->string('favorito');
+            $table->foreignId('id_anuncio')->constrained('anuncios');
+            $table->foreignId('id_publicidade')->constrained('publicidades');
             $table->timestamps();
         });
     }
@@ -33,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('corrector');
+        Schema::dropIfExists('likes');
     }
 };

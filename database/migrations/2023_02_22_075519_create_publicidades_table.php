@@ -13,15 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('agente', function (Blueprint $table) {
+        Schema::create('publicidades', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_user')->constrained('users');
-            $table->string('nome_agencia');
-            $table->integer('ano_cadastro');
-            $table->text('especializacao');
-            $table->integer('telefone');
+            $table->foreignId('id_plano')->constrained('planouser');
+            $table->string('tipo_publicidade');
+            $table->string('titulo');
+            $table->string('imagem');
+            $table->text('descricao');
             $table->string('endereco');
-            $table->foreignId('id_anuncio')->constrained('anuncio');
+            $table->integer('tempo_pago');
+            $table->float('total_pago');
             $table->timestamps();
         });
     }
@@ -33,6 +34,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('agente');
+        Schema::dropIfExists('publicidades');
     }
 };

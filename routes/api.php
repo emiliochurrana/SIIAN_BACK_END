@@ -25,6 +25,13 @@ use App\Http\Controllers\UserController;
     Route::get('/proprietario', [UserController::class, 'createProprietario'])->name('newproprietario');
     Route::get('/usuario/editproprietario/{id}', [UserController::class, 'editProprietario'])->name('editproprietario');
     Route::get('/usuario/showproprietario/{id}', [UserController::class, 'showProprietario'])->name('showproprietario');
+    Route::get('/usuario/pesquisaproprietario', [UserController::class, 'pesquisaProprietario'])->name('pesquisaproprietario');
+
+    Route::get('/usuario/construtoras', [UserController::class, 'indexConstrutora'])->name('construtorasview');
+    Route::get('/construtora', [UserController::class, 'createConstrutora'])->name('newconstrutora');
+    Route::get('/usuario/editconstrutora/{id}', [UserController::class, 'editConstrutora'])->name('editconstrutora');
+    Route::get('/usuario/showconstrutora/{id}', [UserController::class, 'showConstrutora'])->name('showconstrutora');
+    Route::get('/usuario/pesquisaconstrutora', [UserController::class, 'pesquisaConstrutora'])->name('pesquisaconstrutora');
 
     Route::get('/anuncio/create', [AnuncioController::class, 'create'])->name('newanuncio');
     Route::get('/anuncio/show', [AnuncioController::class, 'show'])->name('anuncioshow');
@@ -37,14 +44,21 @@ use App\Http\Controllers\UserController;
 
     Route::post('/anuncio/store', [AnuncioController::class, 'store'])->name('anuncioview');
 
+    Route::post('/usuario/construtora', [UserController::class, 'storeConstrutora'])->name('storeconstrutora');
+
 
 //PUT
     Route::put('/usuario/updateproprietario/{id}', [UserController::class, 'updateProprietario'])->name('proprietarioview');
     
     Route::put('/anuncio/update/{id}', [AnuncioController::class, 'update'])->name('anuncioview');
 
+    Route::put('/usuario/updateConstrutora/{id}', [UserController::class, 'updateConstrutora'])->name('');
+
+
 
 //DELETE
     Route::delete('/usuario/deleteproprietario/{id}', [UserController::class, 'destroyProprietario'])->name('proprietarioview');
 
     Route::delete('/anuncio/destroy/{id}', [AnuncioController::class, 'destroy'])->name('anuncioview');
+
+    Route::delete('/usuario/deleteconstrutora/{id}', [UserController::class, 'destroyConstrutora'])->name('');
