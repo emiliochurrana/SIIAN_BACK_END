@@ -15,11 +15,15 @@ return new class extends Migration
     {
         Schema::create('construtoras', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_user')->constrained('users');
-            $table->string('doc_verificacao');
-            $table->text('sobre');
-            $table->string('ano_criacao');
-            $table->integer('telefone');
+            //$table->foreignId('id_user')->constrained('users');
+            //$table->string('nome_construtora');
+            $table->string('num_alvara');
+            $table->string('num_nuit');
+            $table->string('doc_alvara');
+            $table->string('doc_nuit');
+            //$table->text('especializacao');
+            //$table->json('telefone')->nullable();
+            $table->string('endereco');
             $table->timestamps();
         });
     }

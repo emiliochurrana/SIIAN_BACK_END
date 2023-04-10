@@ -24,13 +24,20 @@ class User extends Authenticatable
         'password',
     ];
 
-    public function proprietario(){
-        return $this->hashMany('App\Models\Proprietario'); 
+    public function correctora(){
+        return $this->belongsToMany(Correctora::class, 'user_corrector', 'id_user', 'id_corrector'); 
     }
 
-    public function anuncio(){
-        return $this->hashMany('App\Models\Anuncio');
+    public function agente(){
+
+        return $this->belongsToMany(Agente::class, 'user_agente', 'id_user', 'id_agente');
     }
+
+    public function construtora(){
+
+        return $this->belongsToMany(Construtora::class, 'user_construtora', 'id_user', 'id_construtora');
+    }
+
 
     /**
      * The attributes that should be hidden for serialization.

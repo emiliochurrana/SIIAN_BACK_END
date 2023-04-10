@@ -13,13 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('proprietarios', function (Blueprint $table) {
+        Schema::create('funcionarios', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_user')->constrained('users');
-            $table->string('doc_identificacao');
+            $table->string('doc_indentificacao');
             $table->string('data_nascimento');
-            $table->integer('telefone');
+            $table->json('telefone')->nullable();
             $table->string('endereco');
+            $table->string('curriculum');
+            $table->foreignId('id_corretora')->constrained('correctoras');
+            $table->foreignId('id_agencia')->constrained('agencias');
+            $table->foreignId('id_construtora')->constrained('construtoras');
             $table->timestamps();
         });
     }
@@ -31,6 +34,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('proprietarios');
+        Schema::dropIfExists('funcionarios');
     }
 };

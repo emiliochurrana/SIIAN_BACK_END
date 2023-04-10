@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('publicidades', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_plano')->constrained('planouser');
+            $table->foreignId('id_plano')->constrained('planousers');
             $table->string('tipo_publicidade');
             $table->string('titulo');
             $table->string('imagem');

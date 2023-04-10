@@ -32,7 +32,7 @@ return new class extends Migration
             $table->string('reparacoes');
             $table->integer('varanda');
             $table->string('vista');
-            $table->string('estilo_cozinha');
+            $table->json('estilo_cozinha')->nullable();
             $table->string('planificacao');
             $table->string('nome_infraestrutura');
             $table->string('data_construcao');
@@ -54,10 +54,12 @@ return new class extends Migration
             $table->float('pre_pagamento');
             $table->float('%_cliente');
             $table->float('%_agente');
-            $table->integer('telefone1');
-            $table->integer('telefone2');
+            $table->json('telefone')->nullable();
             $table->integer('whatsapp');
-            $table->foreignId('id_user')->constrained('users');
+            $table->foreignId('id_corretora')->constrained('correctoras');
+            $table->foreignId('id_construtora')->constrained('construtoras');
+            $table->foreignId('id_proprietario')->constrained('proprietarios');
+            $table->foreignId('id_agencia')->constrained('agencias');
             $table->timestamps();
         });
     }

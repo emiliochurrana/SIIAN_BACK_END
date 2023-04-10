@@ -9,19 +9,19 @@ class Construtora extends Model
 {
     use HasFactory;
 
+    protected $table = 'construtoras';
+
     protected $fillable = [
 
-        'id_user',
-        'nome_construtora',
-        'doc_indentificacao',
-        'sobre',
-        'ano_criacao',
-        'endereco',
-        'telefone',
+            'num_alvara',
+            'num_nuit',
+            'doc_alvara',
+            'doc_nuit',
+            'endereco'
         
     ];
 
     public function user(){
-        return $this->hashMany('App\Models\User');
+        return $this->belongsToMany(User::class, 'user_construtora', 'id_user', 'id_construtora');
     }
 }

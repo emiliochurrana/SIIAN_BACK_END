@@ -15,13 +15,15 @@ return new class extends Migration
     {
         Schema::create('agentes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_user')->constrained('users');
-            $table->string('nome_agencia');
-            $table->integer('ano_cadastro');
-            $table->text('especializacao');
-            $table->integer('telefone');
+             //$table->foreignId('id_user')->constrained('users');
+            //$table->string('nome_construtora');
+            $table->string('num_alvara');
+            $table->string('num_nuit');
+            $table->string('doc_alvara');
+            $table->string('doc_nuit');
+            //$table->text('especializacao');
+            //$table->json('telefone')->nullable();
             $table->string('endereco');
-            $table->foreignId('id_anuncio')->constrained('anuncio');
             $table->timestamps();
         });
     }

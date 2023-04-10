@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('likes', function (Blueprint $table) {
             $table->id();
             $table->string('favorito');
-            $table->foreignId('id_anuncio')->constrained('anuncios');
-            $table->foreignId('id_publicidade')->constrained('publicidades');
+            //$table->foreignId('id_anuncio')->constrained('anuncios');
+            //$table->foreignId('id_publicidade')->constrained('publicidades');
             $table->timestamps();
         });
     }

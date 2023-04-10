@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Agente;
 use App\Models\Construtora;
-use App\Models\Proprietario;
+use App\Models\Correctora;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -15,42 +15,42 @@ class UserController extends Controller
 
 /**
  * ---------------------------------------------------------------------------------------
- * --------------------------------Proprietarios------------------------------------------
+ * --------------------------------Correctoras------------------------------------------
  * ---------------------------------------------------------------------------------------
  */
     /**
-     * Funcao para trazer todos proprietarios.
+     * Funcao para trazer todos Correctoras.
      *
      * @return \Illuminate\Http\Response
      */
-    public function indexProprietario()
+    public function indexCorrectora()
     {
         $utilizador = User::all();
-        $utilizador = Proprietario::all();
-        return view('listProprietarios', ['user' => $utilizador]);
+        $utilizador = Correctora::all();
+        return view('listCorrectoras', ['user' => $utilizador]);
     }
      
     /**
-     * Funcao para carregar formulario de cadastro do proprietario.
+     * Funcao para carregar formulario de cadastro do Correctora.
      *
      * @return \Illuminate\Http\Response
      */
-    public function createProprietario()
+    public function createCorrectora()
     {
         return view('/');
     }
 
     /**
-     * Funcao para pesquisa de Proprietarios.
+     * Funcao para pesquisa de Correctoras.
      *
      * @return \Illuminate\Http\Response
      */
-    public function pesquisaProprietarios()
+    public function pesquisaCorrectoras()
     {
         //
         $search = request('search');
         if($search){
-            $utilizador = Proprietario::where([
+            $utilizador = Correctora::where([
                 ['nome', 'like', '%', $search. '%']
             ])->get();
         }
@@ -58,28 +58,28 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para salvar dados do proprietario na base de dados.
+     * Funcao para salvar dados do Correctora na base de dados.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-     public function storeProprietario(Request $request){
+     public function storeCorrectora(Request $request){
         $user = new User();
-        $user->user_tipo = 'proprietario';
+        $user->user_tipo = 'Correctora';
         $user->name = $request->input('nome');
         $user->email = $request->input('email');
         $user->username = $request->email;
         $user->password = Hash ::make($request->input('password'));
         $email = User::all()->where('email', '=', $user->email)->count();
         if($email > 0){
-            $addProprietario['success'] = false;
-            $addProprietario['mensagem'] = 'Esse email ja esta registado no sistema!';
-            return response()->json($addProprietario);
+            $addCorrectora['success'] = false;
+            $addCorrectora['mensagem'] = 'Esse email ja esta registado no sistema!';
+            return response()->json($addCorrectora);
         }
         $user->save();
         $id_user = $user->id;
         
-        $utilizador = new Proprietario();
+        $utilizador = new Correctora();
         $utilizador->id_user = $id_user;
         //-------------------------upload de documento de identificacao--------------------------------
        /* if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
@@ -95,45 +95,45 @@ class UserController extends Controller
         $utilizador->endereco = $request->input('endereco');
         
         if($utilizador->save()){
-            return redirect()->route('/')->with(['Mensagem' => 'Proprietario Cadastrado com sucesso'], Response::HTTP_OK);
+            return redirect()->route('/')->with(['Mensagem' => 'Correctora Cadastrado com sucesso'], Response::HTTP_OK);
         }else{
             return redirect('/')->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR);
         } 
     }
 
     /**
-     * Funcao para visualizar dados de um Proprietario.
+     * Funcao para visualizar dados de um Correctora.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function showProprietario($id)
+    public function showCorrectora($id)
     {
-        $utilizador = Proprietario::findOrFail($id);
-        return view('/', ['proprietario' => $utilizador]);
+        $utilizador = Correctora::findOrFail($id);
+        return view('/', ['correctora' => $utilizador]);
     }
 
     /**
-     * Funcao para trazer formulario para editar dados do proprietario.
+     * Funcao para trazer formulario para editar dados do Correctora.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function editProprietario($id)
+    public function editCorrectora($id)
     {
         $utilizador = User::findOrFail($id);
-        $utilizador = Proprietario::findOrFail($id);
-        return view('editproprietario', ['user' => $utilizador]);
+        $utilizador = Correctora::findOrFail($id);
+        return view('editCorrectora', ['user' => $utilizador]);
     }
 
     /**
-     * Funcao para actualizar dados do proprietario.
+     * Funcao para actualizar dados do Correctora.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function updateProprietario(Request $request)
+    public function updateCorrectora(Request $request)
     {
         $data = $request->all();
         // ---------------------upload de documento de identificacao------------------------------ 
@@ -154,21 +154,21 @@ class UserController extends Controller
     }
     
     /**
-     * Funcao para eliminar um proprietario.
+     * Funcao para eliminar um Correctora.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroyProprietario($id)
+    public function destroyCorrectora($id)
     {
         User::findOrFail($id)->delete();
-        Proprietario::findOrFail($id)->delete();
+        Correctora::findOrFail($id)->delete();
 
-        return redirect()->route('/')->with(['Mensagem' => 'Proprietario eliminado com sucesso'], Response::HTTP_OK);
+        return redirect()->route('/')->with(['Mensagem' => 'Correctora eliminado com sucesso'], Response::HTTP_OK);
     }
 
 /**
- * ----------------------------------------------fim proprietarios --------------------------------------------------------
+ * ----------------------------------------------fim Correctoras --------------------------------------------------------
  */
      
 
@@ -231,9 +231,9 @@ class UserController extends Controller
         $user->password = Hash ::make($request->input('password'));
         $email = User::all()->where('email', '=', $user->email)->count();
         if($email > 0){
-            $addProprietario['success'] = false;
-            $addProprietario['mensagem'] = 'Esse email ja esta registado no sistema!';
-            return response()->json($addProprietario);
+            $addCorrectora['success'] = false;
+            $addCorrectora['mensagem'] = 'Esse email ja esta registado no sistema!';
+            return response()->json($addCorrectora);
         }
         $user->save();
         $id_user = $user->id;
@@ -388,9 +388,9 @@ class UserController extends Controller
         $user->password = Hash ::make($request->input('password'));
         $email = User::all()->where('email', '=', $user->email)->count();
         if($email > 0){
-            $addProprietario['success'] = false;
-            $addProprietario['mensagem'] = 'Esse email ja esta registado no sistema!';
-            return response()->json($addProprietario);
+            $addCorrectora['success'] = false;
+            $addCorrectora['mensagem'] = 'Esse email ja esta registado no sistema!';
+            return response()->json($addCorrectora);
         }
         $user->save();
         $id_user = $user->id;
