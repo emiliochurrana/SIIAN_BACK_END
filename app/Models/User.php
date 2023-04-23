@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -15,28 +17,51 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var array<int, string>\
      */
+
+    protected $table = 'users';
     protected $fillable = [
+        'user_tipo',
         'name',
         'username', 
         'email',
-        'password',
+        'password'
     ];
 
-    public function correctora(){
-        return $this->belongsToMany(Correctora::class, 'user_corrector', 'id_user', 'id_corrector'); 
+    public function correctoraUser(): BelongsTo{
+        return $this->belongsTo(Correctora::class, 'id_user', 'id'); 
     }
 
-    public function agente(){
+    public function agenteUser(): BelongsTo{
 
-        return $this->belongsToMany(Agente::class, 'user_agente', 'id_user', 'id_agente');
+        return $this->belongsTo(Agente::class, 'id_user', 'id');
     }
 
-    public function construtora(){
+    public function construtoraUser(): BelongsTo{
 
-        return $this->belongsToMany(Construtora::class, 'user_construtora', 'id_user', 'id_construtora');
+        return $this->belongsTo(Construtora::class, 'id_user', 'id');
     }
+
+    public function anuncioUser(): HasMany{
+        return $this->hasMany(Anuncio::class, 'id_empresa', 'id');
+    }
+
+    public function funcionarioUser(): BelongsTo{
+        return $this->belongsTo(Funcionario::class, 'id_user', 'id');
+    }
+
+    public function correctoraFuncionario(): BelongsTo{
+        return $this->belongsTo(Correctora::class, 'id_empresa', 'id');
+    }
+
+    public function construtoraFuncionario(): BelongsTo{
+        return $this->belongsTo(Construtora::class, 'id_empresa', 'id');
+    }
+    public function agenciaFuncionario(): BelongsTo{
+        return $this->belongsTo(Agente::class, 'id_empresa', 'id');
+    }
+
 
 
     /**

@@ -15,9 +15,8 @@ return new class extends Migration
     {
         Schema::create('servicos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_anuncio')->constrained('anuncios');
             $table->string('tipo_servico');
-            $table->integer('categoria_servico');
+            $table->string('categoria_servico');
             $table->timestamps();
         });
     }

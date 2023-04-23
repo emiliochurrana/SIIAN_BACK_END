@@ -14,9 +14,9 @@ class UserController extends Controller
 {
 
 /**
- * ---------------------------------------------------------------------------------------
- * --------------------------------Correctoras------------------------------------------
- * ---------------------------------------------------------------------------------------
+ * ---------------------------------------------------------------------------------------------------------------------------------------
+ * --------------------------------------------------------------------Correctoras--------------------------------------------------------
+ * ---------------------------------------------------------------------------------------------------------------------------------------
  */
     /**
      * Funcao para trazer todos Correctoras.
@@ -25,9 +25,9 @@ class UserController extends Controller
      */
     public function indexCorrectora()
     {
-        $utilizador = User::all();
-        $utilizador = Correctora::all();
-        return view('listCorrectoras', ['user' => $utilizador]);
+      $correctoras = User::with('correctoraUser')->where(['user_tipo' => 'correctora'])->get();
+      return view('', compact('correctoras'));
+
     }
      
     /**
@@ -50,11 +50,11 @@ class UserController extends Controller
         //
         $search = request('search');
         if($search){
-            $utilizador = Correctora::where([
+            $correctora = Correctora::where([
                 ['nome', 'like', '%', $search. '%']
             ])->get();
         }
-        return view('', ['user' => $utilizador, 'search' => $search]);
+        return view('', ['user' => $correctora, 'search' => $search]);
     }
 
     /**
@@ -65,8 +65,8 @@ class UserController extends Controller
      */
      public function storeCorrectora(Request $request){
         $user = new User();
-        $user->user_tipo = 'Correctora';
-        $user->name = $request->input('nome');
+        $user->user_tipo = 'correctora';
+        $user->name = $request->input('name');
         $user->email = $request->input('email');
         $user->username = $request->email;
         $user->password = Hash ::make($request->input('password'));
@@ -79,22 +79,32 @@ class UserController extends Controller
         $user->save();
         $id_user = $user->id;
         
-        $utilizador = new Correctora();
-        $utilizador->id_user = $id_user;
+        $correctora = new Correctora();
+        $correctora->id_user = $id_user;
+        $correctora->tipo_doc = $request->input('tipo_doc');
+        $correctora->data_nascimento = $request->input('data_nascimento');
+        $correctora->num_doc = $request->input('num_doc');
         //-------------------------upload de documento de identificacao--------------------------------
-       /* if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
-            $requestDocument = $request->doc_identificacao;
-            $extension = $requestDocument->extension();
-            $docName = md5($requestDocument->doc_identificacao->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $request->doc_identificacao->move(public_path(), $docName);
-            $utilizador->doc_identificacao = $docName;
-        }*/
-        $utilizador->doc_identificacao = $request->input('doc_identificacao');
-        $utilizador->data_nascimento = $request->input('data_nascimento');
-        $utilizador->telefone = $request->input('telefone');
-        $utilizador->endereco = $request->input('endereco');
+        if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
+            $requestIdentificacao = $request->doc_identificacao;
+            $extension = $requestIdentificacao->extension();
+            $docName = md5($requestIdentificacao->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestIdentificacao->move(public_path('ficheiros/correctoras/identificacoes'), $docName);
+            $correctora->doc_identificacao = $docName;
+        }
+
+        //-------------------------upload de foto do documento de identificacao--------------------------------
+        if($request->hashFile('foto_doc') && $request->file('foto_doc')->isValid()){
+            $requestFoto = $request->foto_doc;
+            $extension = $requestFoto->extension();
+            $fotoName = md5($requestFoto->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestFoto->move(public_path('ficheiros/correctoras/fotos'), $fotoName);
+            $correctora->foto_doc = $fotoName;
+        }
+        $correctora->telefone = $request->input('telefone');
+        $correctora->endereco = $request->input('endereco');
         
-        if($utilizador->save()){
+        if($correctora->save()){
             return redirect()->route('/')->with(['Mensagem' => 'Correctora Cadastrado com sucesso'], Response::HTTP_OK);
         }else{
             return redirect('/')->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -109,8 +119,9 @@ class UserController extends Controller
      */
     public function showCorrectora($id)
     {
-        $utilizador = Correctora::findOrFail($id);
-        return view('/', ['correctora' => $utilizador]);
+        $user = User::findOrFail($id);
+        $correctoras = $user->correctoraUser()->get();
+        return view(' ', ['correctora' => $correctoras]);
     }
 
     /**
@@ -121,9 +132,9 @@ class UserController extends Controller
      */
     public function editCorrectora($id)
     {
-        $utilizador = User::findOrFail($id);
-        $utilizador = Correctora::findOrFail($id);
-        return view('editCorrectora', ['user' => $utilizador]);
+        $user = User::findOrFail($id);
+        $correctoras = $user->correctoraUser()->get();
+        return view('editCorrectora', ['correctoras' => $correctoras]);
     }
 
     /**
@@ -136,13 +147,22 @@ class UserController extends Controller
     public function updateCorrectora(Request $request)
     {
         $data = $request->all();
-        // ---------------------upload de documento de identificacao------------------------------ 
+        //-------------------------upload de documento de identificacao--------------------------------
         if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
-            $requestDocument = $request->doc_identificacao;
-            $extension = $requestDocument->extension();
-            $docName = md5($requestDocument->doc_identificacao->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $request->doc_identificacao->move(public_path(), $docName);
+            $requestIdentificacao = $request->doc_identificacao;
+            $extension = $requestIdentificacao->extension();
+            $docName = md5($requestIdentificacao->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestIdentificacao->move(public_path('ficheiros/correctoras/identificacoes'), $docName);
             $data['doc_identificacao'] = $docName;
+        }
+
+        //-------------------------upload de foto do documento de identificacao--------------------------------
+        if($request->hashFile('foto_doc') && $request->file('foto_doc')->isValid()){
+            $requestFoto = $request->foto_doc;
+            $extension = $requestFoto->extension();
+            $fotoName = md5($requestFoto->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestFoto->move(public_path('ficheiros/correctoras/fotos'), $fotoName);
+            $data['foto_doc'] = $fotoName;
         }
         if($request->all()){
             return redirect()->route('/')->with(['Mensagem' => 'Seus dados foram actualizados com sucesso'], Response::HTTP_OK);
@@ -161,21 +181,24 @@ class UserController extends Controller
      */
     public function destroyCorrectora($id)
     {
-        User::findOrFail($id)->delete();
-        Correctora::findOrFail($id)->delete();
+        $user = User::findOrFail($id);
+        $correctora = $user->correctoraUser()->get();
+        $correctora->delete();
 
         return redirect()->route('/')->with(['Mensagem' => 'Correctora eliminado com sucesso'], Response::HTTP_OK);
     }
 
 /**
- * ----------------------------------------------fim Correctoras --------------------------------------------------------
+ * ----------------------------------------------------------------------------------------------------------------------------------------------------
+ * ---------------------------------------------------------------------fim Correctoras ---------------------------------------------------------------
+ * ----------------------------------------------------------------------------------------------------------------------------------------------------
  */
      
 
 /**
- * ------------------------------------------------------------------------------------------
- * ---------------------------------Construtoras---------------------------------------------
- * ------------------------------------------------------------------------------------------
+ * ----------------------------------------------------------------------------------------------------------------------------------------------------
+ * -------------------------------------------------------------------------Construtoras---------------------------------------------------------------
+ * ----------------------------------------------------------------------------------------------------------------------------------------------------
  */
     /**
      * Funcao para trazer todas construtoras.
@@ -183,10 +206,8 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function indexConstrutora(){
-
-        $utilizador = User::all();
-        $utilizador = Construtora::all();
-        return view('listConstruras', ['user' => $utilizador]);
+        $construtoras = User::with('construtoraUser')->where(['user_tipo' => 'construtora']);
+        return view('', compact('construtoras'));
     }
 
      /**
@@ -225,7 +246,7 @@ class UserController extends Controller
     public function storeConstrutora(Request $request){
         $user = new User();
         $user->user_tipo = 'construtora';
-        $user->name = $request->input('nome');
+        $user->name = $request->input('name');
         $user->email = $request->input('email');
         $user->username = $request->email;
         $user->password = Hash ::make($request->input('password'));
@@ -238,24 +259,33 @@ class UserController extends Controller
         $user->save();
         $id_user = $user->id;
 
-        $utilizador = new Construtora();
-        $utilizador->nome_constr = $request->input('nome_constr');
-        $utilizador->doc_vericacao = $request->input('doc_verificacao');
-        //-------------------------upload de documento de verificacao--------------------------------
-       /* if($request->hashFile('doc_verificacao') && $request->file('doc_verificacao')->isValid()){
-            $requestDocument = $request->doc_verificacao;
-            $extension = $requestDocument->extension();
-            $docName = md5($requestDocument->doc_verificacao->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $request->doc_verificacao->move(public_path(), $docName);
-            $utilizador->doc_verificacao = $docName;
-        }*/
-        $utilizador->sobre = $request->input('sobre');
-        $utilizador->ano_criacao = $request->input('ano_criacao');
-        $utilizador->endereco = $request->input('endereco');
-        $utilizador->telefone = $request->input('telefone');
-        $utilizador->id_user = $id_user;
+        $construtora = new Construtora();
+        $construtora->num_alvara = $request->input('num_alvara');
+        $construtora->num_nuit = $request->input('num_nuit');
+        //-------------------------upload de Alvara--------------------------------
+       if($request->hashFile('doc_alvara') && $request->file('doc_alvara')->isValid()){
+            $requestAlvara = $request->doc_alvara;
+            $extension = $requestAlvara->extension();
+            $alvaraName = md5($requestAlvara->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestAlvara->move(public_path('ficheiros/agentes/alvaras'), $alvaraName);
+            $construtora->doc_alvara = $alvaraName;
+        }
+        
+          //-------------------------upload de Nuit--------------------------------
+       if($request->hashFile('doc_nuit') && $request->file('doc_nuit')->isValid()){
+        $requestNuit = $request->doc_nuit;
+        $extension = $requestNuit->extension();
+        $nuitName = md5($requestNuit->getClientOriginalName() . strtotime("now")) . "." . $extension;
+        $requestNuit->move(public_path('ficheiros/agentes/nuit'), $nuitName);
+        $construtora->doc_nuit = $nuitName;
+        }
+        //$utilizador->especializacao = $request->input('especializacao');
+       // $utilizador->ano_criacao = $request->input('ano_criacao');
+        $construtora->endereco = $request->input('endereco');
+        $construtora->telefone = $request->input('telefone');
+        $construtora->id_user = $id_user;
 
-        if($utilizador->save()){
+        if($construtora->save()){
             return redirect()->route('/')->with(['Mensagem' => 'Construtora Cadastrada com sucesso'], Response::HTTP_OK);
         }else{
             return redirect('/')->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR); 
@@ -270,8 +300,9 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function showConstrutora($id){
-        $utilizador = Construtora::findOrFail($id);
-        return view('/', ['construtora' => $utilizador]);
+        $user = User::findOrFail($id);
+        $construtoras = $user->construtoraUser()->get();
+        return view('/', ['construtoras' => $construtoras]);
     }
 
     /**
@@ -281,9 +312,9 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function editConstrutora($id){
-        $utilizador = User::findOrFail($id);
-        $utilizador = Construtora::findOrFail($id);
-        return view('editconstrutora', ['user' => $utilizador]);
+        $user = User::findOrFail($id);
+        $construtoras = $user->construtoraUser()->get();
+        return view('editconstrutora', ['construtoras' => $construtoras]);
     }
 
     /**
@@ -295,13 +326,22 @@ class UserController extends Controller
      */
     public function updateConstrutora(Request $request){
         $data = $request->all();
-        // ---------------------upload de documento de verificacao------------------------------ 
-        if($request->hashFile('doc_verificacao') && $request->file('doc_verificacao')->isValid()){
-            $requestDocument = $request->doc_verificacao;
-            $extension = $requestDocument->extension();
-            $docName = md5($requestDocument->doc_verificacao->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $request->doc_verificacao->move(public_path(), $docName);
-            $data['doc_verificacao'] = $docName;
+         //-------------------------upload de Alvara--------------------------------
+       if($request->hashFile('doc_alvara') && $request->file('doc_alvara')->isValid()){
+            $requestAlvara = $request->doc_alvara;
+            $extension = $requestAlvara->extension();
+            $alvaraName = md5($requestAlvara->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestAlvara->move(public_path('ficheiros/agentes/alvaras'), $alvaraName);
+            $data['doc_alvara'] = $alvaraName;
+        }
+    
+        //-------------------------upload de Nuit--------------------------------
+        if($request->hashFile('doc_nuit') && $request->file('doc_nuit')->isValid()){
+            $requestNuit = $request->doc_nuit;
+            $extension = $requestNuit->extension();
+            $nuitName = md5($requestNuit->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestNuit->move(public_path('ficheiros/agentes/nuit'), $nuitName);
+            $data['doc_nuit'] = $nuitName;
         }
         if($request->all()){
             return redirect()->route('/')->with(['Mensagem' => 'Seus dados foram actualizados com sucesso'], Response::HTTP_OK);
@@ -317,21 +357,24 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroyConstrutora($id){
-        User::findOrFail($id)->delete();
-        Construtora::findOrFail($id)->delete();
+        $user = User::findOrFail($id);
+        $construtora = $user->construtoraUser()->get();
+        $construtora->delete();
 
         return redirect()->route('/')->with(['Mensagem' => 'Construtora eliminada com sucesso', Response::HTTP_OK]);
     }
 
 /**
- * ------------------------------------------------------fim construtoras --------------------------------------------------
+ * --------------------------------------------------------------------------------------------------------------------------------------------------
+ * ------------------------------------------------------------------fim construtoras ---------------------------------------------------------------
+ * --------------------------------------------------------------------------------------------------------------------------------------------------
  */    
 
 
 /**
- * --------------------------------------------------------------------------------------------------------------------------
- * -----------------------------------------------------Agentes--------------------------------------------------------------
- * --------------------------------------------------------------------------------------------------------------------------
+ * --------------------------------------------------------------------------------------------------------------------------------------------------
+ * -----------------------------------------------------------------------Agentes--------------------------------------------------------------------
+ * --------------------------------------------------------------------------------------------------------------------------------------------------
  */
 
     /**
@@ -340,10 +383,8 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function indexAgente(){
-
-        $utilizador = User::all();
-        $utilizador = Agente::all();
-        return view('listAgentes', ['user' => $utilizador]);
+        $agentes = User::with('agenteUser')->where(['user_tipo' => 'agente']);
+        return view('', compact('agentes'));
     }
 
      /**
@@ -381,8 +422,8 @@ class UserController extends Controller
      */
     public function storeAgente(Request $request){
         $user = new User();
-        $user->user_tipo = 'Agencia';
-        $user->name = $request->input('nome');
+        $user->user_tipo = 'agente';
+        $user->name = $request->input('name');
         $user->email = $request->input('email');
         $user->username = $request->email;
         $user->password = Hash ::make($request->input('password'));
@@ -395,24 +436,32 @@ class UserController extends Controller
         $user->save();
         $id_user = $user->id;
 
-        $utilizador = new Agente();
-        $utilizador->nome_constr = $request->input('nome_agencia');
-        $utilizador->doc_vericacao = $request->input('doc_verificacao');
-        //-------------------------upload de documento de verificacao--------------------------------
-       /* if($request->hashFile('doc_verificacao') && $request->file('doc_verificacao')->isValid()){
-            $requestDocument = $request->doc_verificacao;
-            $extension = $requestDocument->extension();
-            $docName = md5($requestDocument->doc_verificacao->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $request->doc_verificacao->move(public_path(), $docName);
-            $utilizador->doc_verificacao = $docName;
-        }*/
-        $utilizador->especializacao = $request->input('especializacao');
-        $utilizador->ano_criacao = $request->input('ano_criacao');
-        $utilizador->endereco = $request->input('endereco');
-        $utilizador->telefone = $request->input('telefone');
-        $utilizador->id_user = $id_user;
+        $agente = new Agente();
+        $agente->num_alvara = $request->input('num_alvara');
+        $agente->num_nuit = $request->input('num_nuit');
+        //-------------------------upload de Alvara--------------------------------
+       if($request->hashFile('doc_alvara') && $request->file('doc_alvara')->isValid()){
+            $requestAlvara = $request->doc_alvara;
+            $extension = $requestAlvara->extension();
+            $alvaraName = md5($requestAlvara->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestAlvara->move(public_path('ficheiros/agentes/alvaras'), $alvaraName);
+            $agente->doc_alvara = $alvaraName;
+        }
+        
+          //-------------------------upload de Nuit--------------------------------
+       if($request->hashFile('doc_nuit') && $request->file('doc_nuit')->isValid()){
+            $requestNuit = $request->doc_nuit;
+            $extension = $requestNuit->extension();
+            $nuitName = md5($requestNuit->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestNuit->move(public_path('ficheiros/agentes/nuit'), $nuitName);
+            $agente->doc_nuit = $nuitName;
+        }
+ 
+        $agente->endereco = $request->input('endereco');
+        $agente->telefone = $request->input('telefone');
+        $agente->id_user = $id_user;
 
-        if($utilizador->save()){
+        if($agente->save()){
             return redirect()->route('/')->with(['Mensagem' => 'Agencia Cadastrada com sucesso'], Response::HTTP_OK);
         }else{
             return redirect('/')->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR); 
@@ -438,9 +487,9 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function editAgencia($id){
-        $utilizador = User::findOrFail($id);
-        $utilizador = Agente::findOrFail($id);
-        return view('editagencia', ['user' => $utilizador]);
+        $user = User::findOrFail($id);
+        $agentes = $user->agenteUser()->get();
+        return view('editagencia', ['agentes' => $agentes]);
     }
 
     /**
@@ -452,13 +501,22 @@ class UserController extends Controller
      */
     public function updateAgencia(Request $request){
         $data = $request->all();
-        // ---------------------upload de documento de verificacao------------------------------ 
-        if($request->hashFile('doc_verificacao') && $request->file('doc_verificacao')->isValid()){
-            $requestDocument = $request->doc_verificacao;
-            $extension = $requestDocument->extension();
-            $docName = md5($requestDocument->doc_verificacao->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $request->doc_verificacao->move(public_path(), $docName);
-            $data['doc_verificacao'] = $docName;
+            //-------------------------upload de Alvara--------------------------------
+        if($request->hashFile('doc_alvara') && $request->file('doc_alvara')->isValid()){
+            $requestAlvara = $request->doc_alvara;
+            $extension = $requestAlvara->extension();
+            $alvaraName = md5($requestAlvara->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestAlvara->move(public_path('ficheiros/agentes/alvaras'), $alvaraName);
+            $data['doc_alvara'] = $alvaraName;
+        }
+        
+        //-------------------------upload de Nuit--------------------------------
+        if($request->hashFile('doc_nuit') && $request->file('doc_nuit')->isValid()){
+            $requestNuit = $request->doc_nuit;
+            $extension = $requestNuit->extension();
+            $nuitName = md5($requestNuit->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestNuit->move(public_path('ficheiros/agentes/nuit'), $nuitName);
+            $data['doc_nuit'] = $nuitName;
         }
         if($request->all()){
             return redirect()->route('/')->with(['Mensagem' => 'Seus dados foram actualizados com sucesso'], Response::HTTP_OK);
@@ -473,15 +531,17 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroyagencia($id){
-        User::findOrFail($id)->delete();
-        Agente::findOrFail($id)->delete();
-
+    public function destroyAgencia($id){
+        $user = User::findOrFail($id);
+        $agente = $user->agenteUser()->get();
+        $agente->delete();
         return redirect()->route('/')->with(['Mensagem' => 'Agencia eliminada com sucesso', Response::HTTP_OK]);
     }
 
 /**
- * ------------------------------------------------------fim Agencias --------------------------------------------------
+ * -------------------------------------------------------------------------------------------------------------------------------------------------------
+ * ---------------------------------------------------------------------fim Agencias ---------------------------------------------------------------------
+ * -------------------------------------------------------------------------------------------------------------------------------------------------------
  */    
 
 

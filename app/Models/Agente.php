@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Agente extends Model
 {
@@ -12,6 +14,7 @@ class Agente extends Model
     protected $table = 'agentes';
     protected $fillable = [
 
+            'id_user',
             'num_alvara',
             'num_nuit',
             'doc_alvara',
@@ -20,8 +23,12 @@ class Agente extends Model
 
     ];
 
-    public function user(){
+    public function userAgente(): BelongsTo{
 
-        return $this->belongsToMany(User::class, 'user_agente', 'id_user', 'id_agente');
+        return $this->belongsTo(User::class, 'id_user', 'id');
+    }
+
+    public function funcionarioAgencia(): HasMany{
+        return $this->hasMany(Funcionario::class, 'id_empresa', 'id');
     }
 }

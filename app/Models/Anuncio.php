@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Anuncio extends Model
 {
@@ -54,18 +56,21 @@ class Anuncio extends Model
         '%_agente',
         'telefone',
         'whatsapp',
-        'id_corretora',
-        'id_construtora',
-        'id_proprietario',
-        'id_agencia'
+        'id_empresa',
+        'id_servico'
 
     ];
 
-    public function like(){
+    public function like(): BelongsToMany{
 
         return $this->belongsToMany(Like::class, 'anuncio_like', 'id_anuncio', 'id_like');
 
     }
-
+    public function userAnuncio():BelongsTo{
+        return $this->belongsTo(User::class, 'id_empresa', 'id');
+    }
+    public function servicoAnuncio(): BelongsTo{
+        return $this->belongsTo(Servico::class, 'id_servico', 'id');
+    }
    
 }

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Correctora extends Model
 {
@@ -13,6 +15,7 @@ class Correctora extends Model
 
     protected $fillable = [
 
+        'id_user',
         'tipo_documento',
         'data_nascimento',
         'numero_documento',
@@ -21,7 +24,11 @@ class Correctora extends Model
 
     ];
 
-    public function user(){
-        return $this->belongsToMany(User::class, 'user_corrector', 'id_user', 'id_corrector');
+    public function userCorrectora(): BelongsTo{
+        return $this->belongsTo(User::class, 'id_user', 'id');
+    }
+
+    public function funcionarioCorrectora():HasMany{
+        return $this->hasMany(Funcionario::class, 'id_empresa', 'id');
     }
 }

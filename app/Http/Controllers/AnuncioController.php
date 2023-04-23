@@ -16,8 +16,10 @@ class AnuncioController extends Controller
     public function index()
     {
         //
-        $anuncio = Anuncio::all();
-        return view('', ['anuncio' => $anuncio]);
+        $user = auth()->user();
+        $anuncios = $user->anuncioUser;
+       // $anuncio = Anuncio::all();
+        return view('', ['anuncios' => $anuncios]);
     }
 
     /**
@@ -75,7 +77,7 @@ class AnuncioController extends Controller
         $anuncio->reparacoes = $request->input('reparacoes');
         $anuncio->varanda = $request->input('varanda');
         $anuncio->vista = $request->input('vista');
-        $anuncio->estilo_cozinha = $request->input('estilo_cozinha');
+        $anuncio->estilo_cozinha = $request->estilo_cozinha;
         $anuncio->planificacao = $request->input('planificacao');
         $anuncio->nome_infra = $request->input('nome_infra');
         $anuncio->data_contrucao = $request->input('data_construcao');
@@ -107,9 +109,9 @@ class AnuncioController extends Controller
         $anuncio->pre_pagamento = $request->input('pre_pagamento');
         $anuncio->porcentagem_cliente = $request->input('porcentagem_cliente');
         $anuncio->porcentagem_agente = $request->input('porcentagem_agente');
-        $anuncio->telefone1 = $request->input('telefone1');
-        $anuncio->telefone2 = $request->input('telefone2');
+        $anuncio->telefone = $request->telefone;
         $anuncio->whatsap = $request->input('whatsap');
+        $anuncio->id_servico = $request->id_servico;
 
         $user = auth()->user();
         $anuncio->id_user = $user->id;

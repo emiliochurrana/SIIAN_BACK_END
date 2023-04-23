@@ -15,15 +15,19 @@ return new class extends Migration
     {
         Schema::create('funcionarios', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('id_user');
+            $table->unsignedBigInteger('id_empresa');
             $table->string('doc_indentificacao');
             $table->string('data_nascimento');
             $table->json('telefone')->nullable();
             $table->string('endereco');
             $table->string('curriculum');
-            $table->foreignId('id_corretora')->constrained('correctoras');
-            $table->foreignId('id_agencia')->constrained('agencias');
-            $table->foreignId('id_construtora')->constrained('construtoras');
             $table->timestamps();
+        });
+
+        Schema::table('funcionarios', function (Blueprint $table){
+            $table->foreign('id_user')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('id_empresa')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

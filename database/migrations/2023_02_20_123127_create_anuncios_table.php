@@ -15,6 +15,8 @@ return new class extends Migration
     {
         Schema::create('anuncios', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('id_empresa');
+            $table->unsignedBigInteger('id_servico');
             $table->string('tipo_conta');
             $table->string('tipo_servico');
             $table->string('tipo_arrenda');
@@ -56,12 +58,14 @@ return new class extends Migration
             $table->float('%_agente');
             $table->json('telefone')->nullable();
             $table->integer('whatsapp');
-            $table->foreignId('id_corretora')->constrained('correctoras');
-            $table->foreignId('id_construtora')->constrained('construtoras');
-            $table->foreignId('id_proprietario')->constrained('proprietarios');
-            $table->foreignId('id_agencia')->constrained('agencias');
             $table->timestamps();
         });
+        Schema::table('anuncios', function (Blueprint $table) {
+
+            $table->foreign('id_empresa')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('id_servico')->references('id')->on('servicos')->onDelete('cascade');
+        });
+
     }
 
     /**
