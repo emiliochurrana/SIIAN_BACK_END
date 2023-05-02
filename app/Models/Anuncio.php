@@ -66,9 +66,18 @@ class Anuncio extends Model
         return $this->belongsToMany(Like::class, 'anuncio_like', 'id_anuncio', 'id_like');
 
     }
-    public function userAnuncio():BelongsTo{
+    public function ConstrutoraAnuncio():BelongsTo{
         return $this->belongsTo(User::class, 'id_empresa', 'id');
     }
+
+    public function agenteAnuncio():BelongsTo{
+        return $this->belongsTo(User::class, 'id_empresa', 'id');
+    }
+
+    public function correctoraAnuncio():BelongsTo{
+        return $this->belongsTo(User::class, 'id_empresa', 'id');
+    }
+
     public function servicoAnuncio(): BelongsTo{
         return $this->belongsTo(Servico::class, 'id_servico', 'id');
     }

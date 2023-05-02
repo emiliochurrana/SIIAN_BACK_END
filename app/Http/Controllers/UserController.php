@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Agente;
 use App\Models\Construtora;
 use App\Models\Correctora;
+use App\Models\Funcionario;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -50,8 +52,8 @@ class UserController extends Controller
         //
         $search = request('search');
         if($search){
-            $correctora = Correctora::where([
-                ['nome', 'like', '%', $search. '%']
+            $correctora = User::with('correctoraUser')->where([
+              'user_tipo' => 'correctora',  ['name', 'like', '%', $search. '%']
             ])->get();
         }
         return view('', ['user' => $correctora, 'search' => $search]);
@@ -69,7 +71,18 @@ class UserController extends Controller
         $user->name = $request->input('name');
         $user->email = $request->input('email');
         $user->username = $request->email;
-        $user->password = Hash ::make($request->input('password'));
+        $pass = $request->password;
+        $confirPass = $request->confirm_password;
+        if($pass == $confirPass){
+            if(strlen($pass) >= 6){
+            $user->password = Hash ::make($request->password);
+            }else{
+                return redirect()->back()->with(['msgErrorPass' => 'A palavra passe de ter no minimo 6 digitos']);
+            }
+        }else{
+            return redirect()->back()->with(['msgPass' => 'A palavra passe nao coincide']);
+        }
+          
         $email = User::all()->where('email', '=', $user->email)->count();
         if($email > 0){
             $addCorrectora['success'] = false;
@@ -145,30 +158,113 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function updateCorrectora(Request $request)
-    {
-        $data = $request->all();
-        //-------------------------upload de documento de identificacao--------------------------------
-        if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
-            $requestIdentificacao = $request->doc_identificacao;
-            $extension = $requestIdentificacao->extension();
-            $docName = md5($requestIdentificacao->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $requestIdentificacao->move(public_path('ficheiros/correctoras/identificacoes'), $docName);
-            $data['doc_identificacao'] = $docName;
-        }
+     {
+        $user = auth()->user();
+        $correctora = $user->correctoraUser;
+        $userPassword = $user->password;
 
-        //-------------------------upload de foto do documento de identificacao--------------------------------
-        if($request->hashFile('foto_doc') && $request->file('foto_doc')->isValid()){
-            $requestFoto = $request->foto_doc;
-            $extension = $requestFoto->extension();
-            $fotoName = md5($requestFoto->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $requestFoto->move(public_path('ficheiros/correctoras/fotos'), $fotoName);
-            $data['foto_doc'] = $fotoName;
-        }
-        if($request->all()){
-            return redirect()->route('/')->with(['Mensagem' => 'Seus dados foram actualizados com sucesso'], Response::HTTP_OK);
+        if($request->password_actual != ""){
+            $newPass = $request->password;
+            $confirPass = $request->confirm_password;
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $tipo_doc = $request->tipo_doc;
+            $data_nascimento = $request->data_nascimento;
+            $num_doc = $request->num_doc;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            if(Hash::check($request->password_actual, $userPassword)){
+                if($newPass == $confirPass){
+                    if(strlen($newPass) >= 6){
+                        $user->password = Hash::make($request->password);
+                        DB::table('users')->where('id', $user->id)->update(['password' => $user->password]);
+                        DB::table('users')->where('id', $user->id)->update(['name' => $name]);
+                        DB::table('users')->where('id', $user->id)->update(['email' => $email]);
+                        DB::table('users')->where('id', $user->id)->update(['username' => $username]);
+            
+                        //-------------------------upload de documento de identificacao--------------------------------
+                        if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
+                            $requestIdentificacao = $request->doc_identificacao;
+                            $extension = $requestIdentificacao->extension();
+                            $docName = md5($requestIdentificacao->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                            $requestIdentificacao->move(public_path('ficheiros/correctoras/identificacoes'), $docName);
+                            $doc_identificacao = $docName;
+                            DB::table('correctoras')->where('id', $correctora->id)->update(['doc_identificacao' => $doc_identificacao]);
+            
+                        }
+                        
+                       //-------------------------upload de foto do documento de identificacao--------------------------------
+                        //-------------------------upload de foto do documento de identificacao--------------------------------
+                        if($request->hashFile('foto_doc') && $request->file('foto_doc')->isValid()){
+                            $requestFoto = $request->foto_doc;
+                            $extension = $requestFoto->extension();
+                            $fotoName = md5($requestFoto->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                            $requestFoto->move(public_path('ficheiros/correctoras/fotos'), $fotoName);
+                            $foto_doc = $fotoName;
+                            DB::table('correctoras')->where('id', $correctora->id)->update(['foto_doc' => $foto_doc]);
+            
+                        }
+                        DB::table('correctoras')->where('id', $correctora->id)->update(['tipo_doc' => $tipo_doc]);
+                        DB::table('correctoras')->where('id', $correctora->id)->update(['data_nascimento' => $data_nascimento]);
+                        DB::table('correctoras')->where('id', $correctora->id)->update(['num_doc' => $num_doc]);
+                        DB::table('correctoras')->where('id', $correctora->id)->update(['telefone' => $telefone]);
+                        DB::table('correctoras')->where('id', $correctora->id)->update(['endereco' => $endereco]);
+                        return redirect()->route('')->with(['msgPassSucess' => 'A palavra passe foi combinada correctamente']);
+                    }else{
+                        return redirect()->back()->with(['msgErrorPass' => 'A palavra passe deve ter no minimo 6 digitos']);
+                    }
+                }else{
+                    return redirect()->back()->with(['msgIncorrecta' => 'Por favor verifique a palavra passe nao coincide']);
+                }
+
+            }else{
+                return redirect()->back()->with(['password_actual' => 'A palavra passe actual nao coincide com a nova']);
+            }
         }else{
-            return redirect('/')->with(['Mensagem' => 'Erro ao actualizar os dados'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $tipo_doc = $request->tipo_doc;
+            $data_nascimento = $request->data_nascimento;
+            $num_doc = $request->num_doc;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            DB::table('users')->where('id', $user->id)->update(['name' => $name]);
+            DB::table('users')->where('id', $user->id)->update(['email' => $email]);
+            DB::table('users')->where('id', $user->id)->update(['username' => $username]);
+
+            //-------------------------upload de documento de identificacao--------------------------------
+            if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
+                $requestIdentificacao = $request->doc_identificacao;
+                $extension = $requestIdentificacao->extension();
+                $docName = md5($requestIdentificacao->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestIdentificacao->move(public_path('ficheiros/correctoras/identificacoes'), $docName);
+                $doc_identificacao = $docName;
+                DB::table('correctoras')->where('id', $correctora->id)->update(['doc_identificacao' => $doc_identificacao]);
+
+            }
+            
+           //-------------------------upload de foto do documento de identificacao--------------------------------
+            //-------------------------upload de foto do documento de identificacao--------------------------------
+            if($request->hashFile('foto_doc') && $request->file('foto_doc')->isValid()){
+                $requestFoto = $request->foto_doc;
+                $extension = $requestFoto->extension();
+                $fotoName = md5($requestFoto->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestFoto->move(public_path('ficheiros/correctoras/fotos'), $fotoName);
+                $foto_doc = $fotoName;
+                DB::table('correctoras')->where('id', $correctora->id)->update(['foto_doc' => $foto_doc]);
+
+            }
+            DB::table('correctoras')->where('id', $correctora->id)->update(['tipo_doc' => $tipo_doc]);
+            DB::table('correctoras')->where('id', $correctora->id)->update(['data_nascimento' => $data_nascimento]);
+            DB::table('correctoras')->where('id', $correctora->id)->update(['num_doc' => $num_doc]);
+            DB::table('correctoras')->where('id', $correctora->id)->update(['telefone' => $telefone]);
+            DB::table('correctoras')->where('id', $correctora->id)->update(['endereco' => $endereco]);
+
+            return redirect()->route('')->with(['msgSucess' => 'Dados actualizados com sucesso!']);
         }
+        return redirect()->back()->with(['msgError' => 'Erro ao actualizar os dados']);
 
         
     }
@@ -230,11 +326,11 @@ class UserController extends Controller
         //
         $search = request('search');
         if($search){
-            $utilizador = Construtora::where([
-                ['nome', 'like', '%', $search. '%']
+            $construtora = User::with('construtoraUser')->where([
+              'user_tipo' => 'construtora', ['name', 'like', '%', $search. '%']
             ])->get();
         }
-        return view('', ['user' => $utilizador, 'search' => $search]);
+        return view('', ['user' => $construtora, 'search' => $search]);
     }
 
     /**
@@ -249,7 +345,18 @@ class UserController extends Controller
         $user->name = $request->input('name');
         $user->email = $request->input('email');
         $user->username = $request->email;
-        $user->password = Hash ::make($request->input('password'));
+        $pass = $request->password;
+        $confirPass = $request->confirm_password;
+        if($pass == $confirPass){
+            if(strlen($pass) >= 6){
+            $user->password = Hash ::make($request->password);
+            }else{
+                return redirect()->back()->with(['msgErrorPass' => 'A palavra passe de ter no minimo 6 digitos']);
+            }
+        }else{
+            return redirect()->back()->with(['msgPass' => 'A palavra passe nao coincide']);
+        }
+          
         $email = User::all()->where('email', '=', $user->email)->count();
         if($email > 0){
             $addCorrectora['success'] = false;
@@ -279,8 +386,6 @@ class UserController extends Controller
         $requestNuit->move(public_path('ficheiros/agentes/nuit'), $nuitName);
         $construtora->doc_nuit = $nuitName;
         }
-        //$utilizador->especializacao = $request->input('especializacao');
-       // $utilizador->ano_criacao = $request->input('ano_criacao');
         $construtora->endereco = $request->input('endereco');
         $construtora->telefone = $request->input('telefone');
         $construtora->id_user = $id_user;
@@ -325,29 +430,106 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function updateConstrutora(Request $request){
-        $data = $request->all();
-         //-------------------------upload de Alvara--------------------------------
-       if($request->hashFile('doc_alvara') && $request->file('doc_alvara')->isValid()){
-            $requestAlvara = $request->doc_alvara;
-            $extension = $requestAlvara->extension();
-            $alvaraName = md5($requestAlvara->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $requestAlvara->move(public_path('ficheiros/agentes/alvaras'), $alvaraName);
-            $data['doc_alvara'] = $alvaraName;
-        }
-    
-        //-------------------------upload de Nuit--------------------------------
-        if($request->hashFile('doc_nuit') && $request->file('doc_nuit')->isValid()){
-            $requestNuit = $request->doc_nuit;
-            $extension = $requestNuit->extension();
-            $nuitName = md5($requestNuit->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $requestNuit->move(public_path('ficheiros/agentes/nuit'), $nuitName);
-            $data['doc_nuit'] = $nuitName;
-        }
-        if($request->all()){
-            return redirect()->route('/')->with(['Mensagem' => 'Seus dados foram actualizados com sucesso'], Response::HTTP_OK);
+        $user = auth()->user();
+        $construtora = $user->construtoraUser;
+        $userPassword = $user->password;
+
+        if($request->password_actual != ""){
+            $newPass = $request->password;
+            $confirPass = $request->confirm_password;
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $alvara = $request->num_alvara;
+            $nuit = $request->num_nuit;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            if(Hash::check($request->password_actual, $userPassword)){
+                if($newPass == $confirPass){
+                    if(strlen($newPass) >= 6){
+                        $user->password = Hash::make($request->password);
+                        DB::table('users')->where('id', $user->id)->update(['password' => $user->password]);
+                        DB::table('users')->where('id', $user->id)->update(['name' => $name]);
+                        DB::table('users')->where('id', $user->id)->update(['email' => $email]);
+                        DB::table('users')->where('id', $user->id)->update(['username' => $username]);
+
+                         //-------------------------upload de Alvara--------------------------------
+                        if($request->hashFile('doc_alvara') && $request->file('doc_alvara')->isValid()){
+                            $requestAlvara = $request->doc_alvara;
+                            $extension = $requestAlvara->extension();
+                            $alvaraName = md5($requestAlvara->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                            $requestAlvara->move(public_path('ficheiros/construtoras/alvaras'), $alvaraName);
+                            $doc_alvara= $alvaraName;
+                            DB::table('construtoras')->where('id', $construtora ->id)->update(['doc_alvara' => $doc_alvara]);
+
+                        }
+                        
+                                //-------------------------upload de Nuit--------------------------------
+                        if($request->hashFile('doc_nuit') && $request->file('doc_nuit')->isValid()){
+                            $requestNuit = $request->doc_nuit;
+                            $extension = $requestNuit->extension();
+                            $nuitName = md5($requestNuit->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                            $requestNuit->move(public_path('ficheiros/construtoras/nuit'), $nuitName);
+                            $doc_nuit = $nuitName;
+                            DB::table('construtoras')->where('id', $construtora ->id)->update(['doc_nuit' => $doc_nuit]);
+
+                        }
+                        DB::table('construtoras')->where('id', $construtora ->id)->update(['num_alvara' => $alvara]);
+                        DB::table('construtoras')->where('id', $construtora ->id)->update(['num_nuit' => $nuit]);
+                        DB::table('construtoras')->where('id', $construtora ->id)->update(['telefone' => $telefone]);
+                        DB::table('construtoras')->where('id', $construtora ->id)->update(['endereco' => $endereco]);
+                        return redirect()->route('')->with(['msgPassSucess' => 'A palavra passe foi combinada correctamente']);
+                    }else{
+                        return redirect()->back()->with(['msgErrorPass' => 'A palavra passe deve ter no minimo 6 digitos']);
+                    }
+                }else{
+                    return redirect()->back()->with(['msgIncorrecta' => 'Por favor verifique a palavra passe nao coincide']);
+                }
+
+            }else{
+                return redirect()->back()->with(['password_actual' => 'A palavra passe actual nao coincide com a nova']);
+            }
         }else{
-            return redirect('/')->with(['Mensagem' => 'Erro ao actualizar os dados'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $alvara = $request->num_alvara;
+            $nuit = $request->num_nuit;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            DB::table('users')->where('id', $user->id)->update(['name' => $name]);
+            DB::table('users')->where('id', $user->id)->update(['email' => $email]);
+            DB::table('users')->where('id', $user->id)->update(['username' => $username]);
+
+             //-------------------------upload de Alvara--------------------------------
+            if($request->hashFile('doc_alvara') && $request->file('doc_alvara')->isValid()){
+                $requestAlvara = $request->doc_alvara;
+                $extension = $requestAlvara->extension();
+                $alvaraName = md5($requestAlvara->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestAlvara->move(public_path('ficheiros/construtoras/alvaras'), $alvaraName);
+                $doc_alvara= $alvaraName;
+                DB::table('construtoras')->where('id', $construtora ->id)->update(['doc_alvara' => $doc_alvara]);
+
+            }
+            
+            //-------------------------upload de Nuit--------------------------------
+            if($request->hashFile('doc_nuit') && $request->file('doc_nuit')->isValid()){
+                $requestNuit = $request->doc_nuit;
+                $extension = $requestNuit->extension();
+                $nuitName = md5($requestNuit->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestNuit->move(public_path('ficheiros/construtoras/nuit'), $nuitName);
+                $doc_nuit = $nuitName;
+                DB::table('construtoras')->where('id', $construtora ->id)->update(['doc_nuit' => $doc_nuit]);
+
+            }
+            DB::table('construtoras')->where('id', $construtora ->id)->update(['num_alvara' => $alvara]);
+            DB::table('construtoras')->where('id', $construtora ->id)->update(['num_nuit' => $nuit]);
+            DB::table('construtoras')->where('id', $construtora ->id)->update(['telefone' => $telefone]);
+            DB::table('construtoras')->where('id', $construtora ->id)->update(['endereco' => $endereco]);
+
+            return redirect()->route('')->with(['msgSucess' => 'Dados actualizados com sucesso!']);
         }
+        return redirect()->back()->with(['msgError' => 'Erro ao actualizar os dados']);
     }
 
     /**
@@ -407,11 +589,11 @@ class UserController extends Controller
         //
         $search = request('search');
         if($search){
-            $utilizador = Agente::where([
-                ['nome', 'like', '%', $search. '%']
+            $agencia = User::with('agenteUser')->where([
+              'user_tipo' => 'agente',  ['name', 'like', '%', $search. '%']
             ])->get();
         }
-        return view('', ['user' => $utilizador, 'search' => $search]);
+        return view('', ['agencia' => $agencia, 'search' => $search]);
     }
 
     /**
@@ -426,7 +608,18 @@ class UserController extends Controller
         $user->name = $request->input('name');
         $user->email = $request->input('email');
         $user->username = $request->email;
-        $user->password = Hash ::make($request->input('password'));
+        $pass = $request->password;
+        $confirPass = $request->confirm_password;
+        if($pass == $confirPass){
+            if(strlen($pass) >= 6){
+            $user->password = Hash ::make($request->password);
+            }else{
+                return redirect()->back()->with(['msgErrorPass' => 'A palavra passe de ter no minimo 6 digitos']);
+            }
+        }else{
+            return redirect()->back()->with(['msgPass' => 'A palavra passe nao coincide']);
+        }
+            
         $email = User::all()->where('email', '=', $user->email)->count();
         if($email > 0){
             $addCorrectora['success'] = false;
@@ -476,8 +669,9 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function showAgencia($id){
-        $utilizador = Agente::findOrFail($id);
-        return view('/', ['agencia' => $utilizador]);
+        $user = User::findOrFail($id);
+        $agencias = $user->agenteUser()->get();
+        return view('/', ['agencias' => $agencias]);
     }
 
     /**
@@ -500,29 +694,105 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function updateAgencia(Request $request){
-        $data = $request->all();
-            //-------------------------upload de Alvara--------------------------------
-        if($request->hashFile('doc_alvara') && $request->file('doc_alvara')->isValid()){
-            $requestAlvara = $request->doc_alvara;
-            $extension = $requestAlvara->extension();
-            $alvaraName = md5($requestAlvara->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $requestAlvara->move(public_path('ficheiros/agentes/alvaras'), $alvaraName);
-            $data['doc_alvara'] = $alvaraName;
-        }
-        
-        //-------------------------upload de Nuit--------------------------------
-        if($request->hashFile('doc_nuit') && $request->file('doc_nuit')->isValid()){
-            $requestNuit = $request->doc_nuit;
-            $extension = $requestNuit->extension();
-            $nuitName = md5($requestNuit->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $requestNuit->move(public_path('ficheiros/agentes/nuit'), $nuitName);
-            $data['doc_nuit'] = $nuitName;
-        }
-        if($request->all()){
-            return redirect()->route('/')->with(['Mensagem' => 'Seus dados foram actualizados com sucesso'], Response::HTTP_OK);
+        $user = auth()->user();
+        $agente = $user->agenteUser;
+        $userPassword = $user->password;
+
+        if($request->password_actual != ""){
+            $newPass = $request->password;
+            $confirPass = $request->confirm_password;
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $alvara = $request->num_alvara;
+            $nuit = $request->num_nuit;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            if(Hash::check($request->password_actual, $userPassword)){
+                if($newPass == $confirPass){
+                    if(strlen($newPass) >= 6){
+                        $user->password = Hash::make($request->password);
+                        DB::table('users')->where('id', $user->id)->update(['password' => $user->password]);
+                        DB::table('users')->where('id', $user->id)->update(['name' => $name]);
+                        DB::table('users')->where('id', $user->id)->update(['email' => $email]);
+                        DB::table('users')->where('id', $user->id)->update(['username' => $username]);
+
+                         //-------------------------upload de Alvara--------------------------------
+                        if($request->hashFile('doc_alvara') && $request->file('doc_alvara')->isValid()){
+                            $requestAlvara = $request->doc_alvara;
+                            $extension = $requestAlvara->extension();
+                            $alvaraName = md5($requestAlvara->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                            $requestAlvara->move(public_path('ficheiros/agentes/alvaras'), $alvaraName);
+                            $doc_alvara= $alvaraName;
+                            DB::table('agentes')->where('id', $agente->id)->update(['doc_alvara' => $doc_alvara]);
+
+                        }
+                        
+                                //-------------------------upload de Nuit--------------------------------
+                        if($request->hashFile('doc_nuit') && $request->file('doc_nuit')->isValid()){
+                            $requestNuit = $request->doc_nuit;
+                            $extension = $requestNuit->extension();
+                            $nuitName = md5($requestNuit->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                            $requestNuit->move(public_path('ficheiros/agentes/nuit'), $nuitName);
+                            $doc_nuit = $nuitName;
+                            DB::table('agentes')->where('id', $agente->id)->update(['doc_nuit' => $doc_nuit]);
+
+                        }
+                        DB::table('agentes')->where('id', $agente->id)->update(['num_alvara' => $alvara]);
+                        DB::table('agentes')->where('id', $agente->id)->update(['num_nuit' => $nuit]);
+                        DB::table('agentes')->where('id', $agente->id)->update(['telefone' => $telefone]);
+                        DB::table('agentes')->where('id', $agente->id)->update(['endereco' => $endereco]);
+                        return redirect()->route('')->with(['msgPassSucess' => 'A palavra passe foi combinada correctamente']);
+                    }else{
+                        return redirect()->back()->with(['msgErrorPass' => 'A palavra passe deve ter no minimo 6 digitos']);
+                    }
+                }else{
+                    return redirect()->back()->with(['msgIncorrecta' => 'Por favor verifique a palavra passe nao coincide']);
+                }
+
+            }else{
+                return redirect()->back()->with(['password_actual' => 'A palavra passe actual nao coincide com a nova']);
+            }
         }else{
-            return redirect('/')->with(['Mensagem' => 'Erro ao actualizar os dados'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $alvara = $request->num_alvara;
+            $nuit = $request->num_nuit;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            DB::table('users')->where('id', $user->id)->update(['name' => $name]);
+            DB::table('users')->where('id', $user->id)->update(['email' => $email]);
+            DB::table('users')->where('id', $user->id)->update(['username' => $username]);
+
+             //-------------------------upload de Alvara--------------------------------
+            if($request->hashFile('doc_alvara') && $request->file('doc_alvara')->isValid()){
+                $requestAlvara = $request->doc_alvara;
+                $extension = $requestAlvara->extension();
+                $alvaraName = md5($requestAlvara->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestAlvara->move(public_path('ficheiros/agentes/alvaras'), $alvaraName);
+                $doc_alvara= $alvaraName;
+                DB::table('agentes')->where('id', $agente->id)->update(['doc_alvara' => $doc_alvara]);
+
+            }
+            
+            //-------------------------upload de Nuit--------------------------------
+            if($request->hashFile('doc_nuit') && $request->file('doc_nuit')->isValid()){
+                $requestNuit = $request->doc_nuit;
+                $extension = $requestNuit->extension();
+                $nuitName = md5($requestNuit->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestNuit->move(public_path('ficheiros/agentes/nuit'), $nuitName);
+                $doc_nuit = $nuitName;
+                DB::table('agentes')->where('id', $agente->id)->update(['doc_nuit' => $doc_nuit]);
+
+            }
+            DB::table('agentes')->where('id', $agente->id)->update(['num_alvara' => $alvara]);
+            DB::table('agentes')->where('id', $agente->id)->update(['num_nuit' => $nuit]);
+            DB::table('agentes')->where('id', $agente->id)->update(['telefone' => $telefone]);
+            DB::table('agentes')->where('id', $agente->id)->update(['endereco' => $endereco]);
+            return redirect()->route('')->with(['msgSucess' => 'Dados actualizados com sucesso!']);
         }
+        return redirect()->back()->with(['msgError' => 'Erro ao actualizar os dados']);
     }
 
     /**
@@ -542,8 +812,381 @@ class UserController extends Controller
  * -------------------------------------------------------------------------------------------------------------------------------------------------------
  * ---------------------------------------------------------------------fim Agencias ---------------------------------------------------------------------
  * -------------------------------------------------------------------------------------------------------------------------------------------------------
- */    
+ */ 
 
+ 
+ /**
+ * -------------------------------------------------------------------------------------------------------------------------------------------------------
+ * ---------------------------------------------------------------------Funcionarios ---------------------------------------------------------------------
+ * -------------------------------------------------------------------------------------------------------------------------------------------------------
+ */  
+
+   /**
+     * Funcao para trazer todos funcionarios.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexFuncionario(){
+        $funcionarios = User::with('funcionarioUser')->where(['user_tipo' => 'funcionario']);
+        return view('', compact('funcionarios'));
+    }
+
+     /**
+     * Funcao para carregar formulario de cadastro de um funcionario.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function createFuncionario()
+    {
+        return view('/');
+    }
+
+    /**
+     * Funcao para pesquisa de Funcionarios.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function pesquisaFuncionarios()
+    {
+        //
+        $search = request('search');
+        if($search){
+            $funcionario = User::with('funcionarioUser')->where([
+               'tipo_user' => 'funcionario', ['name', 'like', '%', $search. '%']
+            ])->get();
+        }
+        return view('', ['funcionario' => $funcionario, 'search' => $search]);
+    }
+
+    /**
+     * Funcao para salvar dados de um Funcionario na base de dados.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function storeFuncionario(Request $request){
+        $user = new User();
+        $user->user_tipo = 'funcionario';
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        $user->username = $request->email;
+        $pass = $request->password;
+        $confirPass = $request->confirm_password;
+        if($pass == $confirPass){
+            if(strlen($pass) >= 6){
+            $user->password = Hash ::make($request->password);
+            }else{
+                return redirect()->back()->with(['msgErrorPass' => 'A palavra passe de ter no minimo 6 digitos']);
+            }
+        }else{
+            return redirect()->back()->with(['msgPass' => 'A palavra passe nao coincide']);
+        }
+          
+        $email = User::all()->where('email', '=', $user->email)->count();
+        if($email > 0){
+            $addCorrectora['success'] = false;
+            $addCorrectora['mensagem'] = 'Esse email ja esta registado no sistema!';
+            return response()->json($addCorrectora);
+        }
+        $user->save();
+        $id_user = $user->id;
+
+        $funcionario = new Funcionario();
+        $funcionario->data_nascimento = $request->input('data_nascimento');
+        //-------------------------upload de documento de identificacao--------------------------------
+       if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
+            $requestDoc = $request->doc_identificacao;
+            $extension = $requestDoc->extension();
+            $docName = md5($requestDoc->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestDoc->move(public_path('ficheiros/funcionarios/identificacao'), $docName);
+            $funcionario->doc_identificacao = $docName;
+        }
+        
+          //-------------------------upload de Curriculum--------------------------------
+       if($request->hashFile('curriculum') && $request->file('curriculum')->isValid()){
+            $requestCurriculum = $request->curriculum;
+            $extension = $requestCurriculum->extension();
+            $curriculumName = md5($requestCurriculum->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestCurriculum->move(public_path('ficheiros/funcionarios/curriculum'), $curriculumName);
+            $funcionario->curriculum = $curriculumName;
+        }
+ 
+        $funcionario->endereco = $request->input('endereco');
+        $funcionario->telefone = $request->telefone;
+        $funcionario->id_user = $id_user;
+        $userauth = auth()->user();
+        $funcionario->id_empresa =$userauth->id;
+
+        if($funcionario->save()){
+            return redirect()->route('/')->with(['Mensagem' => 'Funcionario cadastrado com sucesso'], Response::HTTP_OK);
+        }else{
+            return redirect('/')->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR); 
+
+        }
+    }
+
+     /**
+     * Funcao para visualizar dados de uma Agencia.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function showFuncionario($id){
+        $user = User::findOrFail($id);
+        $funcionarios = $user->funcionarioUser()->get();
+        return view('/', ['funcionarios' => $funcionarios]);
+    }
+
+    /**
+     * Funcao para trazer formulario para editar dados de uma Agencia.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function editFuncionario($id){
+        $user = User::findOrFail($id);
+        $funcionarios = $user->agenteUser()->get();
+        return view('editagencia', ['funcionarios' => $funcionarios]);
+    }
+
+    /**
+     * Funcao para actualizar dados de uma Agencia.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function updateFuncionario(Request $request){
+        $user = User::findOrFail($request->id);
+        $funcionario = $user->funcionarioUser;
+        $userPassword = $user->password;
+
+        if($request->password_actual != ""){
+            $newPass = $request->password;
+            $confirPass = $request->confirm_password;
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $data_nascimento = $request->data_nascimento;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            if(Hash::check($request->password_actual, $userPassword)){
+                if($newPass == $confirPass){
+                    if(strlen($newPass) >= 6){
+                        $user->password = Hash::make($request->password);
+                        DB::table('users')->where('id', $user->id)->update(['password' => $user->password]);
+                        $data = $request->all('name', 'email', 'username');
+                        $doc_identificacao = $request->all('doc_identificacao');
+                        $curriculum = $request->all('curriculum');
+
+                           //-------------------------upload de documento de identificacao--------------------------------
+                        if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
+                            $requestDoc = $request->doc_identificacao;
+                            $extension = $requestDoc->extension();
+                            $docName = md5($requestDoc->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                            $requestDoc->move(public_path('ficheiros/funcionarios/identificacao'), $docName);
+                            $doc_identificacao['doc_identificacao'] = $docName;
+                            $funcionario->update($doc_identificacao);
+
+                        }
+                        
+                         //-------------------------upload de Curriculum--------------------------------
+                        if($request->hashFile('curriculum') && $request->file('curriculum')->isValid()){
+                            $requestCurriculum = $request->curriculum;
+                            $extension = $requestCurriculum->extension();
+                            $curriculumName = md5($requestCurriculum->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                            $requestCurriculum->move(public_path('ficheiros/funcionarios/curriculum'), $curriculumName);
+                            $curriculum['curriculum'] = $curriculumName;
+                            $funcionario->update($curriculum);
+                        }
+                        $user->update($data);
+                        DB::table('funcionarios')->where('id', $funcionario->id)->update(['data_nascimento' => $data_nascimento]);
+                        DB::table('funcionarios')->where('id', $funcionario->id)->update(['telefone' => $telefone]);
+                        DB::table('funcionarios')->where('id', $funcionario->id)->update(['endereco' => $endereco]);
+
+                        return redirect()->route('')->with(['msgPassSucess' => 'A palavra passe foi combinada correctamente']);
+                    }else{
+                        return redirect()->back()->with(['msgErrorPass' => 'A palavra passe deve ter no minimo 6 digitos']);
+                    }
+                }else{
+                    return redirect()->back()->with(['msgIncorrecta' => 'Por favor verifique a palavra passe nao coincide']);
+                }
+
+            }else{
+                return redirect()->back()->with(['password_actual' => 'A palavra passe actual nao coincide com a nova']);
+            }
+        }else{
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $data_nascimento = $request->data_nascimento;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            DB::table('users')->where('id', $user->id)->update(['password' => $user->password]);
+            $data = $request->all('name', 'email', 'username');
+            $doc_identificacao = $request->all('doc_identificacao');
+            $curriculum = $request->all('curriculum');
+
+               //-------------------------upload de documento de identificacao--------------------------------
+            if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
+                $requestDoc = $request->doc_identificacao;
+                $extension = $requestDoc->extension();
+                $docName = md5($requestDoc->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestDoc->move(public_path('ficheiros/funcionarios/identificacao'), $docName);
+                $doc_identificacao['doc_identificacao'] = $docName;
+                $funcionario->update($doc_identificacao);
+
+            }
+            
+             //-------------------------upload de Curriculum--------------------------------
+            if($request->hashFile('curriculum') && $request->file('curriculum')->isValid()){
+                $requestCurriculum = $request->curriculum;
+                $extension = $requestCurriculum->extension();
+                $curriculumName = md5($requestCurriculum->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestCurriculum->move(public_path('ficheiros/funcionarios/curriculum'), $curriculumName);
+                $curriculum['curriculum'] = $curriculumName;
+                $funcionario->update($curriculum);
+            }
+            $user->update($data);
+            DB::table('funcionarios')->where('id', $funcionario->id)->update(['data_nascimento' => $data_nascimento]);
+            DB::table('funcionarios')->where('id', $funcionario->id)->update(['telefone' => $telefone]);
+            DB::table('funcionarios')->where('id', $funcionario->id)->update(['endereco' => $endereco]);
+
+            return redirect()->route('')->with(['msgSucess' => 'Dados actualizados com sucesso!']);
+        }
+        return redirect()->back()->with(['msgError' => 'Erro ao actualizar os dados']);
+
+    }
+
+          /**
+     * Funcao para trazer formulario para editar dados de uma Agencia.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function editPerfilFuncionario($id){
+        $user = User::findOrFail($id);
+        $funcionarios = $user->agenteUser()->get();
+        return view('editagencia', ['funcionarios' => $funcionarios]);
+    }
+
+    public function updatePerfilFuncionario(Request $request){
+        $user = auth()->user();
+        $funcionario = $user->funcionarioUser;
+        $userPassword = $user->password;
+
+        if($request->password_actual != ""){
+            $newPass = $request->password;
+            $confirPass = $request->confirm_password;
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $data_nascimento = $request->data_nascimento;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            if(Hash::check($request->password_actual, $userPassword)){
+                if($newPass == $confirPass){
+                    if(strlen($newPass) >= 6){
+                        $user->password = Hash::make($request->password);
+                        DB::table('users')->where('id', $user->id)->update(['password' => $user->password]);
+                        DB::table('users')->where('id', $user->id)->update(['name' => $name]);
+                        DB::table('users')->where('id', $user->id)->update(['email' => $email]);
+                        DB::table('users')->where('id', $user->id)->update(['username' => $username]);
+
+                           //-------------------------upload de documento de identificacao--------------------------------
+                        if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
+                            $requestDoc = $request->doc_identificacao;
+                            $extension = $requestDoc->extension();
+                            $docName = md5($requestDoc->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                            $requestDoc->move(public_path('ficheiros/funcionarios/identificacao'), $docName);
+                            $doc_identificacao = $docName;
+                            DB::table('funcionarios')->where('id', $funcionario->id)->update(['doc_identificacao' => $doc_identificacao]);
+
+                        }
+                        
+                         //-------------------------upload de Curriculum--------------------------------
+                        if($request->hashFile('curriculum') && $request->file('curriculum')->isValid()){
+                            $requestCurriculum = $request->curriculum;
+                            $extension = $requestCurriculum->extension();
+                            $curriculumName = md5($requestCurriculum->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                            $requestCurriculum->move(public_path('ficheiros/funcionarios/curriculum'), $curriculumName);
+                            $curriculum = $curriculumName;
+                            DB::table('funcionarios')->where('id', $funcionario->id)->update(['curriculum' => $curriculum]);
+                        }
+                        DB::table('funcionarios')->where('id', $funcionario->id)->update(['data_nascimento' => $data_nascimento]);
+                        DB::table('funcionarios')->where('id', $funcionario->id)->update(['telefone' => $telefone]);
+                        DB::table('funcionarios')->where('id', $funcionario->id)->update(['endereco' => $endereco]);
+
+                        return redirect()->route('')->with(['msgPassSucess' => 'A palavra passe foi combinada correctamente']);
+                    }else{
+                        return redirect()->back()->with(['msgErrorPass' => 'A palavra passe deve ter no minimo 6 digitos']);
+                    }
+                }else{
+                    return redirect()->back()->with(['msgIncorrecta' => 'Por favor verifique a palavra passe nao coincide']);
+                }
+
+            }else{
+                return redirect()->back()->with(['password_actual' => 'A palavra passe actual nao coincide com a nova']);
+            }
+        }else{
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $data_nascimento = $request->data_nascimento;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            DB::table('users')->where('id', $user->id)->update(['password' => $user->password]);
+            DB::table('users')->where('id', $user->id)->update(['name' => $name]);
+            DB::table('users')->where('id', $user->id)->update(['email' => $email]);
+            DB::table('users')->where('id', $user->id)->update(['username' => $username]);
+
+               //-------------------------upload de documento de identificacao--------------------------------
+            if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
+                $requestDoc = $request->doc_identificacao;
+                $extension = $requestDoc->extension();
+                $docName = md5($requestDoc->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestDoc->move(public_path('ficheiros/funcionarios/identificacao'), $docName);
+                $doc_identificacao = $docName;
+                DB::table('funcionarios')->where('id', $funcionario->id)->update(['doc_identificacao' => $doc_identificacao]);
+
+            }
+            
+             //-------------------------upload de Curriculum--------------------------------
+            if($request->hashFile('curriculum') && $request->file('curriculum')->isValid()){
+                $requestCurriculum = $request->curriculum;
+                $extension = $requestCurriculum->extension();
+                $curriculumName = md5($requestCurriculum->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestCurriculum->move(public_path('ficheiros/funcionarios/curriculum'), $curriculumName);
+                $curriculum = $curriculumName;
+                DB::table('funcionarios')->where('id', $funcionario->id)->update(['curriculum' => $curriculum]);
+            }
+            DB::table('funcionarios')->where('id', $funcionario->id)->update(['data_nascimento' => $data_nascimento]);
+            DB::table('funcionarios')->where('id', $funcionario->id)->update(['telefone' => $telefone]);
+            DB::table('funcionarios')->where('id', $funcionario->id)->update(['endereco' => $endereco]);
+
+            return redirect()->route('')->with(['msgSucess' => 'Dados actualizados com sucesso!']);
+        }
+        return redirect()->back()->with(['msgError' => 'Erro ao actualizar os dados']);
+    }
+
+    /**
+     * Funcao para eliminar uma Agencia.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroyFuncionario($id){
+        $user = User::findOrFail($id);
+        $funcionario = $user->funcionarioUser()->get();
+        $funcionario->delete();
+        return redirect()->route('/')->with(['Mensagem' => 'Funcionario eliminada com sucesso', Response::HTTP_OK]);
+    }
+
+/**
+ * -------------------------------------------------------------------------------------------------------------------------------------------------------
+ * ---------------------------------------------------------------------fim Funcionarios -----------------------------------------------------------------
+ * -------------------------------------------------------------------------------------------------------------------------------------------------------
+ */  
 
 }
 

@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('publicidades', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_plano')->constrained('planousers');
+            $table->unsignedBigInteger('id_user');
             $table->string('tipo_publicidade');
             $table->string('titulo');
             $table->string('imagem');
@@ -24,6 +24,10 @@ return new class extends Migration
             $table->integer('tempo_pago');
             $table->float('total_pago');
             $table->timestamps();
+        });
+
+        Schema::table('publicidades', function (Blueprint $table){
+            $table->foreign('id_user')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

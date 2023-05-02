@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('chats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_notificacao')->constrained('notificacoes');
+            $table->foreignId('id_user')->constrained('users');
             $table->string('mensagem');
             $table->string('nome_user');
             $table->timestamps();
@@ -32,3 +32,4 @@ return new class extends Migration
         Schema::dropIfExists('chats');
     }
 };
+ 

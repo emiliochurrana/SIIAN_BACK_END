@@ -5,7 +5,9 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -29,26 +31,34 @@ class User extends Authenticatable
         'password'
     ];
 
-    public function correctoraUser(): BelongsTo{
-        return $this->belongsTo(Correctora::class, 'id_user', 'id'); 
+    public function correctoraUser(): HasOne{
+        return $this->hasOne(Correctora::class, 'id_user', 'id'); 
     }
 
-    public function agenteUser(): BelongsTo{
+    public function agenteUser(): HasOne{
 
-        return $this->belongsTo(Agente::class, 'id_user', 'id');
+        return $this->hasOne(Agente::class, 'id_user', 'id');
     }
 
-    public function construtoraUser(): BelongsTo{
+    public function construtoraUser(): HasOne{
 
-        return $this->belongsTo(Construtora::class, 'id_user', 'id');
+        return $this->hasOne(Construtora::class, 'id_user', 'id');
     }
 
-    public function anuncioUser(): HasMany{
+    public function anuncioCorrectora(): HasMany{
         return $this->hasMany(Anuncio::class, 'id_empresa', 'id');
     }
 
-    public function funcionarioUser(): BelongsTo{
-        return $this->belongsTo(Funcionario::class, 'id_user', 'id');
+    public function anuncioConstrutora(): HasMany{
+        return $this->hasMany(Anuncio::class, 'id_empresa', 'id');
+    }
+
+    public function anuncioAgente(): HasMany{
+        return $this->hasMany(Anuncio::class, 'id_empresa', 'id');
+    }
+
+    public function funcionarioUser(): HasOne{
+        return $this->hasOne(Funcionario::class, 'id_user', 'id');
     }
 
     public function correctoraFuncionario(): BelongsTo{
@@ -60,6 +70,23 @@ class User extends Authenticatable
     }
     public function agenciaFuncionario(): BelongsTo{
         return $this->belongsTo(Agente::class, 'id_empresa', 'id');
+    }
+
+    public function notificacaoUser(): HasMany{
+        return $this->hasMany(Notificacao::class, 'id_user', 'id');
+    }
+
+    public function chatUser(): HasMany{
+        return $this->hasMany(Chat::class, 'id_user', 'id');
+    }
+
+    public function publicidadeUser(): HasMany{
+        return $this->hasMany(Publicidade::class, 'id_user', 'id');
+
+    }
+
+    public function likeUser(){
+        return $this->hasMany(Like::class, 'id_user', 'id');
     }
 
 

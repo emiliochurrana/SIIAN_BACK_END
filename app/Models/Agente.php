@@ -27,8 +27,4 @@ class Agente extends Model
 
         return $this->belongsTo(User::class, 'id_user', 'id');
     }
-
-    public function funcionarioAgencia(): HasMany{
-        return $this->hasMany(Funcionario::class, 'id_empresa', 'id');
-    }
 }
