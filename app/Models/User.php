@@ -61,15 +61,9 @@ class User extends Authenticatable
         return $this->hasOne(Funcionario::class, 'id_user', 'id');
     }
 
-    public function correctoraFuncionario(): BelongsTo{
-        return $this->belongsTo(Correctora::class, 'id_empresa', 'id');
-    }
 
-    public function construtoraFuncionario(): BelongsTo{
-        return $this->belongsTo(Construtora::class, 'id_empresa', 'id');
-    }
-    public function agenciaFuncionario(): BelongsTo{
-        return $this->belongsTo(Agente::class, 'id_empresa', 'id');
+    public function funcionarioEmpresa(){
+        return $this->hasMany(Funcionario::class, 'id_empresa', 'id');
     }
 
     public function notificacaoUser(): HasMany{
@@ -85,10 +79,13 @@ class User extends Authenticatable
 
     }
 
-    public function likeUser(){
-        return $this->hasMany(Like::class, 'id_user', 'id');
+    public function anuncioLike(){
+        return $this->belongsToMany(Anuncio::class, 'anuncio_like', 'id_anuncio', 'id_user');
     }
 
+    public function publicidadeLike(){
+        return $this->belongsToMany(Publicidade::class, 'publicidade_like', 'id_publicidade', 'id_user');
+    }
 
 
     /**

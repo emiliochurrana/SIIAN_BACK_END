@@ -21,19 +21,27 @@ class UserController extends Controller
  * ---------------------------------------------------------------------------------------------------------------------------------------
  */
     /**
-     * Funcao para trazer todos Correctoras.
+     * Função para trazer todos Correctoras.
      *
      * @return \Illuminate\Http\Response
      */
     public function indexCorrectora()
     {
-      $correctoras = User::with('correctoraUser')->where(['user_tipo' => 'correctora'])->get();
-      return view('', compact('correctoras'));
+        $search = request('search');
+
+        if ($search) {
+            $correctoras = User::where([
+               ['user_tipo' => 'correctora'],  ['name', 'like', '%' .$search . '%']
+            ])->get();
+        }else{
+            $correctoras = User::with('correctoraUser')->where(['user_tipo' => 'correctora'])->get();
+        }
+      return view('', ['$correctoras' => $correctoras, 'search' => $search]);
 
     }
      
     /**
-     * Funcao para carregar formulario de cadastro do Correctora.
+     * Função para carregar formulario de cadastro do Correctora.
      *
      * @return \Illuminate\Http\Response
      */
@@ -43,24 +51,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para pesquisa de Correctoras.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function pesquisaCorrectoras()
-    {
-        //
-        $search = request('search');
-        if($search){
-            $correctora = User::with('correctoraUser')->where([
-              'user_tipo' => 'correctora',  ['name', 'like', '%', $search. '%']
-            ])->get();
-        }
-        return view('', ['user' => $correctora, 'search' => $search]);
-    }
-
-    /**
-     * Funcao para salvar dados do Correctora na base de dados.
+     * Função para salvar dados do Correctora na base de dados.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -125,7 +116,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para visualizar dados de um Correctora.
+     * Função para visualizar dados de um Correctora.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -138,7 +129,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para trazer formulario para editar dados do Correctora.
+     * Função para trazer formulario para editar dados do Correctora.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -151,7 +142,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para actualizar dados do Correctora.
+     * Função para actualizar dados do Correctora.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
@@ -270,7 +261,7 @@ class UserController extends Controller
     }
     
     /**
-     * Funcao para eliminar um Correctora.
+     * Função para eliminar um Correctora.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -297,17 +288,25 @@ class UserController extends Controller
  * ----------------------------------------------------------------------------------------------------------------------------------------------------
  */
     /**
-     * Funcao para trazer todas construtoras.
+     * Função para trazer todas construtoras.
      *
      * @return \Illuminate\Http\Response
      */
     public function indexConstrutora(){
-        $construtoras = User::with('construtoraUser')->where(['user_tipo' => 'construtora']);
-        return view('', compact('construtoras'));
+        $search = request('search');
+
+        if ($search) {
+            $construtoras = User::where([
+                ['user_tipo' => 'construtora'], ['name', 'like', '%' .$search . '%']
+            ])->get();
+        }else{
+            $construtoras = User::with('construtoraUser')->where(['user_tipo' => 'construtora']);
+        }
+        return view('', ['construtoras' => $construtoras, 'search' => $search]);
     }
 
      /**
-     * Funcao para carregar formulario de cadastro de uma construtora.
+     * Função para carregar formulario de cadastro de uma construtora.
      *
      * @return \Illuminate\Http\Response
      */
@@ -317,24 +316,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para pesquisa de Construtoras.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function pesquisaConstrutora()
-    {
-        //
-        $search = request('search');
-        if($search){
-            $construtora = User::with('construtoraUser')->where([
-              'user_tipo' => 'construtora', ['name', 'like', '%', $search. '%']
-            ])->get();
-        }
-        return view('', ['user' => $construtora, 'search' => $search]);
-    }
-
-    /**
-     * Funcao para salvar dados de uma Construtora na base de dados.
+     * Função para salvar dados de uma Construtora na base de dados.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -399,7 +381,7 @@ class UserController extends Controller
     }
 
      /**
-     * Funcao para visualizar dados de uma Construtora.
+     * Função para visualizar dados de uma Construtora.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -411,7 +393,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para trazer formulario para editar dados de uma construtora.
+     * Função para trazer formulario para editar dados de uma construtora.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -423,7 +405,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para actualizar dados de uma construtora.
+     * Função para actualizar dados de uma construtora.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
@@ -533,7 +515,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para eliminar uma construtora.
+     * Função para eliminar uma construtora.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -560,17 +542,25 @@ class UserController extends Controller
  */
 
     /**
-     * Funcao para trazer todas Agencias.
+     * Função para trazer todas Agencias.
      *
      * @return \Illuminate\Http\Response
      */
     public function indexAgente(){
+        $search = request('search');
+
+        if ($search) {
+            $agentes = User::where([
+              ['user_tipo' => 'agente'],  ['name', 'like', '%' .$search. '%']
+            ])->get();
+        }else{
         $agentes = User::with('agenteUser')->where(['user_tipo' => 'agente']);
-        return view('', compact('agentes'));
+        }
+        return view('', ['agentes' => $agentes, 'search' => $search]);
     }
 
      /**
-     * Funcao para carregar formulario de cadastro de uma Agencia.
+     * Função para carregar formulario de cadastro de uma Agencia.
      *
      * @return \Illuminate\Http\Response
      */
@@ -580,24 +570,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para pesquisa de Agencias.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function pesquisaAgencias()
-    {
-        //
-        $search = request('search');
-        if($search){
-            $agencia = User::with('agenteUser')->where([
-              'user_tipo' => 'agente',  ['name', 'like', '%', $search. '%']
-            ])->get();
-        }
-        return view('', ['agencia' => $agencia, 'search' => $search]);
-    }
-
-    /**
-     * Funcao para salvar dados de uma Agencia na base de dados.
+     * Função para salvar dados de uma Agencia na base de dados.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -663,7 +636,7 @@ class UserController extends Controller
     }
 
      /**
-     * Funcao para visualizar dados de uma Agencia.
+     * Função para visualizar dados de uma Agencia.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -675,7 +648,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para trazer formulario para editar dados de uma Agencia.
+     * Função para trazer formulario para editar dados de uma Agencia.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -687,7 +660,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para actualizar dados de uma Agencia.
+     * Função para actualizar dados de uma Agencia.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
@@ -796,7 +769,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para eliminar uma Agencia.
+     * Função para eliminar uma Agencia.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -822,17 +795,29 @@ class UserController extends Controller
  */  
 
    /**
-     * Funcao para trazer todos funcionarios.
+     * Função para trazer todos funcionarios.
      *
      * @return \Illuminate\Http\Response
      */
     public function indexFuncionario(){
-        $funcionarios = User::with('funcionarioUser')->where(['user_tipo' => 'funcionario']);
-        return view('', compact('funcionarios'));
+
+        $search = request('search');
+
+        if ($search) {
+            $userlog = auth()->user()->id;
+            $funcionarios = Funcionario::where([
+                   ['id_empresa', $userlog], ['name', 'like', '%' .$search. '%']
+            ])->get();
+        }else{
+            $user = auth()->user();
+        //$funcionarios = User::with('funcionarioUser')->where(['user_tipo' => 'funcionario']);
+            $funcionarios = $user->funcionarioEmpresa;
+        }
+        return view('', ['funcionarios' => $funcionarios, 'search' => $search]);
     }
 
      /**
-     * Funcao para carregar formulario de cadastro de um funcionario.
+     * Função para carregar formulario de cadastro de um funcionario.
      *
      * @return \Illuminate\Http\Response
      */
@@ -842,24 +827,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para pesquisa de Funcionarios.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function pesquisaFuncionarios()
-    {
-        //
-        $search = request('search');
-        if($search){
-            $funcionario = User::with('funcionarioUser')->where([
-               'tipo_user' => 'funcionario', ['name', 'like', '%', $search. '%']
-            ])->get();
-        }
-        return view('', ['funcionario' => $funcionario, 'search' => $search]);
-    }
-
-    /**
-     * Funcao para salvar dados de um Funcionario na base de dados.
+     * Função para salvar dados de um Funcionario na base de dados.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -892,6 +860,7 @@ class UserController extends Controller
         $id_user = $user->id;
 
         $funcionario = new Funcionario();
+        $funcionario->name = $request->input('name');
         $funcionario->data_nascimento = $request->input('data_nascimento');
         //-------------------------upload de documento de identificacao--------------------------------
        if($request->hashFile('doc_identificacao') && $request->file('doc_identificacao')->isValid()){
@@ -926,7 +895,7 @@ class UserController extends Controller
     }
 
      /**
-     * Funcao para visualizar dados de uma Agencia.
+     * Função para visualizar dados de uma Agencia.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -937,8 +906,24 @@ class UserController extends Controller
         return view('/', ['funcionarios' => $funcionarios]);
     }
 
+
+      /**
+     * Função para carregar o perfil do Funcionario.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function perfilFuncionario($id){
+
+        $user = User::findOrFail($id);
+        $funcionario = $user->funcionarioUser()->get();
+
+        return view('', ['funcionario' => $funcionario]);
+    }
+
+
     /**
-     * Funcao para trazer formulario para editar dados de uma Agencia.
+     * Função para trazer formulario para editar dados de uma Agencia.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -950,7 +935,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para actualizar dados de uma Agencia.
+     * Função para actualizar dados de uma Agencia.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
@@ -1059,7 +1044,7 @@ class UserController extends Controller
     }
 
           /**
-     * Funcao para trazer formulario para editar dados de uma Agencia.
+     * Função para trazer formulario para editar dados de uma Agencia.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -1170,7 +1155,7 @@ class UserController extends Controller
     }
 
     /**
-     * Funcao para eliminar uma Agencia.
+     * Função para eliminar uma Agencia.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response

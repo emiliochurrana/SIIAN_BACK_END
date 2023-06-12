@@ -11,5 +11,5 @@ class PublicidadeLike extends Model
 
     protected $table = 'publicidade_like';
 
-    protected $fillable = ['id_publicidade', 'id_like'];
+    protected $fillable = ['id_publicidade', 'id_user'];
 }

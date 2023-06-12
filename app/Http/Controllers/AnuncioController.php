@@ -15,11 +15,18 @@ class AnuncioController extends Controller
      */
     public function index()
     {
-        //
+        $search = request('search');
+
+        if ($search) {
+            $userlog = auth()->user()->id;
+            $anuncios = Anuncio::where([
+                   ['id_user',$userlog], ['titulo', 'like', '%' .$search . '%'],
+            ])->get();
+        }else{
         $user = auth()->user();
         $anuncios = $user->anuncioUser;
-       // $anuncio = Anuncio::all();
-        return view('', ['anuncios' => $anuncios]);
+        }
+        return view('', ['anuncios' => $anuncios, 'search' => $search]);
     }
 
     /**
@@ -95,7 +102,7 @@ class AnuncioController extends Controller
             $requestImagem =$request->imagem;
             $extension = $requestImagem->extension();
             $imagemName=md5($requestImagem->imagem->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $request->imagem->move(public_path('ficheiros/anuncio/imagem'), $imagemName);
+            $request->imagem->move(public_path('ficheiros/anuncios/imagens'), $imagemName);
             $anuncio->imagem = $imagemName;
         }
 
@@ -119,8 +126,30 @@ class AnuncioController extends Controller
         if($anuncio->save()){
             return redirect('/')->with(['Mensagem' => 'Anuncio publicado com sucesso'], Response::HTTP_OK);
         }else{
-            return redirect('/')->with(['Mensagem' => 'Erro ao publicar anuncio'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return redirect()->back()->with(['Mensagem' => 'Erro ao publicar anuncio'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Funcao para dar um like em um anuncio.
+     *
+     * @param  \App\Models\Anuncio  $anuncio
+     * @return \Illuminate\Http\Response
+     */
+    public function likeAnuncio($id){
+        $user = auth()->user();
+        $user->anuncioLike()->attach($id);
+    }
+    
+    /**
+     * Funcao para dar um deslike em um anuncio.
+     *
+     * @param  \App\Models\Anuncio  $anuncio
+     * @return \Illuminate\Http\Response
+     */
+    public function deslikeAnuncio($id){
+        $user = auth()->user();
+        $user->anuncioLike()->detach($id);
     }
 
     /**
@@ -176,7 +205,7 @@ class AnuncioController extends Controller
         if($request->all()){
             return redirect()->route('')->with(['Mensagem' => 'Anuncio actualizado com sucesso']);
         }else{
-            return redirect('/')->with(['Mensagem' => 'Erro ao actualizar dados do anuncio']);
+            return redirect()->back()->with(['Mensagem' => 'Erro ao actualizar dados do anuncio']);
         }
     }
 

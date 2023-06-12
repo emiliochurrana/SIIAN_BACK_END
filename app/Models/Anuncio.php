@@ -61,9 +61,9 @@ class Anuncio extends Model
 
     ];
 
-    public function like(): BelongsToMany{
+    public function likeAnuncio(): BelongsToMany{
 
-        return $this->belongsToMany(Like::class, 'anuncio_like', 'id_anuncio', 'id_like');
+        return $this->belongsToMany(User::class, 'anuncio_like', 'id_anuncio', 'id_user');
 
     }
     public function ConstrutoraAnuncio():BelongsTo{

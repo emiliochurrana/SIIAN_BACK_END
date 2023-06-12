@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Session;
 class AuthController extends Controller
 {
     //
+    public function createLogin(){
+        return view('');
+    }
     public function login(Request $request)
         {
           $userLog = User::all()->where('email', '=', $request->input('email'))->first();

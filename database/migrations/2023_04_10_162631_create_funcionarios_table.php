@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('id_user');
             $table->unsignedBigInteger('id_empresa');
+            $table->string('name');
             $table->string('doc_indentificacao');
             $table->string('data_nascimento');
             $table->json('telefone')->nullable();

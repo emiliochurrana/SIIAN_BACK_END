@@ -15,15 +15,32 @@ class Publicidade extends Model
     protected $fillabel = [
         'id_user',
         'tipo_publicidade',
-        'titulo',
-        'imagem',
+        'espaco',
+        'imovel_servico',
+        'empreendimento',
         'descricao',
-        'endereco',
-        'tempo_pago',
-        'total_pago'
+        'telefone',
+        'link',
+        'tipo_promocao',
+        'promocao',
+        'paragem',
+        'tempo',
+        'informacao_legal',
+        'imagem',
+        'imagem_predefinida',
+        'instituicao',
+        'validade',
+        'limite_finaciamento',
+        'taxa_juro',
+        'primeira_prestacao',
+        'logotipo'
     ];
 
     public function userPublicidade(): BelongsTo{
         return $this->belongsTo(User::class, 'id_user', 'id');
+    }
+
+    public function likePublicidade(){
+        return $this->belongsToMany(User::class, 'publicidade_like', 'id_publicidade', 'id_user');
     }
 }

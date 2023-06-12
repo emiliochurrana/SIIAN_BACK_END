@@ -28,7 +28,4 @@ class Correctora extends Model
         return $this->belongsTo(User::class, 'id_user', 'id');
     }
 
-    public function funcionarioCorrectora():HasMany{
-        return $this->hasMany(Funcionario::class, 'id_empresa', 'id');
-    }
 }

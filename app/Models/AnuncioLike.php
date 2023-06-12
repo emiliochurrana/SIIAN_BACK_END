@@ -11,5 +11,5 @@ class AnuncioLike extends Model
 
     protected $table = 'anuncio_like';
 
-    protected $fillable = ['id_anuncio', 'id_like'];
+    protected $fillable = ['id_anuncio', 'id_user'];
 }

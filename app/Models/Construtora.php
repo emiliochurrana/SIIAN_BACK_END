@@ -27,8 +27,4 @@ class Construtora extends Model
     public function userConstrutora(): BelongsTo{
         return $this->belongsTo(User::class, 'id_user', 'id');
     }
-
-    public function funcionarioConstrutora(): HasMany{
-        return $this->hasMany(Funcionario::class, 'id_empresa', 'id');
-    }
 }

@@ -13,6 +13,7 @@ class Funcionario extends Model
     protected $fillabel = [
         'id_user',
         'id_empresa',
+        'name',
         'doc_indentificacao',
         'data_nascimento',
         'telefone',

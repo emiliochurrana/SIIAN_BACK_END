@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('anuncio_like', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_anuncio');
-            $table->unsignedBigInteger('id_like');
+            $table->unsignedBigInteger('id_user');
             $table->timestamps();
         });
 
@@ -34,7 +34,7 @@ return new class extends Migration
              * Colocando uma chave estrangeira no 
              * campo que armazena o ID de like
              */
-            $table->foreign('id_like')->references('id')->on('likes')->onDelete('cascade');
+            $table->foreign('id_user')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

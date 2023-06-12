@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('publicidade_like', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_publicidade');
-            $table->unsignedBigInteger('id_like');
+            $table->unsignedBigInteger('id_user');
             $table->timestamps();
         });
 
@@ -27,14 +27,14 @@ return new class extends Migration
              * Colocando uma chave estrangeira no 
              * campo que armazena o ID da publicidade
              */
-            $table->foreign('_publicidade')->references('id')->on('publicidades')->onDelete('cascade');
+            $table->foreign('id_publicidade')->references('id')->on('publicidades')->onDelete('cascade');
             
             /**
              * Aqui estamos alterando a tabela e 
              * Colocando uma chave estrangeira no 
              * campo que armazena o ID de likes
              */
-            $table->foreign('id_like')->references('id')->on('likes')->onDelete('cascade');
+            $table->foreign('id_user')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

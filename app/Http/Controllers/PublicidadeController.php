@@ -17,10 +17,18 @@ class PublicidadeController extends Controller
      */
     public function index()
     {
-        //
+        $search = request('search');
+
+        if ($search) {
+            $userlog = auth()->user()->id;
+            $publicidades = Publicidade::where([
+                   ['id_user', $userlog], ['titulo', 'like', '%' .$search . '%'],
+            ])->get();
+        }else{
         $userauth = auth()->user();
         $publicidades = $userauth->publicidadeUser;
-        return view('', ['publicidades' => $publicidades]);
+        }
+        return view('', ['publicidades' => $publicidades, 'search' => $search]);
     }
 
     /**
@@ -47,30 +55,73 @@ class PublicidadeController extends Controller
         $user = auth()->user();
         $publicidade->id_user = $user->id;
         $publicidade->tipo_publicidade = $request->input('tipo_publicidade');
-        $publicidade->titulo = $request->input('titulo');
+        $publicidade->espaco = $request->input('espaco');
         
-          //-----------------------upload imagem -------------------------------------------
-          if($request->hasFile('imagem') && $request->file('imagem')->isValid()){
+          //-----------------------upload logotipo -------------------------------------------
+          if($request->hasFile('logotipo') && $request->file('logotipo')->isValid()){
+
+            $requestImagem =$request->logotipo;
+            $extension = $requestImagem->extension();
+            $imagemName=md5($requestImagem->getClientOriginalName() . strtotime("now")) . "." . $extension;
+            $requestImagem->move(public_path('ficheiros/publicidades/logotipos'), $imagemName);
+            $publicidade->logotipo = $imagemName;
+        }
+         //-----------------------upload imagem -------------------------------------------
+         if($request->hasFile('imagem') && $request->file('imagem')->isValid()){
 
             $requestImagem =$request->imagem;
             $extension = $requestImagem->extension();
             $imagemName=md5($requestImagem->imagem->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $request->imagem->move(public_path('ficheiros/publicidades/imagem'), $imagemName);
+            $request->imagem->move(public_path('ficheiros/publicidades/imagens'), $imagemName);
             $publicidade->imagem = $imagemName;
         }
 
+        $publicidade->imovel_servico = $request->input('imovel_servico');
+        $publicidade->empreendimento = $request->input('empreendimento');
         $publicidade->descricao = $request->input('descricao');
-        $publicidade->endereco = $request->input('endereco');
-        $publicidade->tempo_pago = $request->input('tempo_pago');
-        $publicidade->total_pago = $request->input('total_pago');
+        $publicidade->telefone = $request->input('telefone');
+        $publicidade->link = $request->input('link');
+        $publicidade->tipo_promocao = $request->input('tipo_promocao');
+        $publicidade->promocao = $request->input('promocao');
+        $publicidade->paragem = $request->input('paragem');
+        $publicidade->tempo = $request->input('tempo');
+        $publicidade->informacao_legal = $request->input('informacao_legal');
+        $publicidade->instituicao = $request->input('instituicao');
+        $publicidade->validade = $request->input('validade');
+        $publicidade->limite_financeiro = $request->input('limite_financeiro');
+        $publicidade->taxa_juro = $request->input('taxa_juro');
+        $publicidade->primeira_prestacao = $request->input('primeira_prestacao');
 
         if($publicidade->save()){
 
             return redirect()->route('/')->with('msg', 'Publicidade fixada com sucesso!');
         }else{
-            return redirect()->route('/')->with('msg', 'Erro ao fixar a publicidade');
+            return redirect()->back()->with('msg', 'Erro ao fixar a publicidade');
         }
     }
+
+        /**
+     * Função para dar um like em uma publicidade.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function likePublicidade($id){
+        $user = auth()->user();
+        $user->publicidadeLike()->attach($id);
+    }
+
+    /**
+     * Função para dar um deslike em uma publicidade.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function deslikePublicidade($id){
+        $user = auth()->user();
+        $user->publicidadeLike()->detach($id);
+    }
+
 
     /**
      * Display the specified resource.
@@ -111,6 +162,15 @@ class PublicidadeController extends Controller
     {
         //
         $data = $request->all();
+            //-----------------------upload logotipo -------------------------------------------
+            if($request->hasFile('logotipo') && $request->file('logotipo')->isValid()){
+
+                $requestImagem =$request->logotipo;
+                $extension = $requestImagem->extension();
+                $imagemName=md5($requestImagem->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestImagem->move(public_path('ficheiros/publicidades/logotipos'), $imagemName);
+                $data['logotipo'] = $imagemName;
+            }
            //-----------------------upload imagem -------------------------------------------
            if($request->hasFile('imagem') && $request->file('imagem')->isValid()){
 
@@ -138,5 +198,7 @@ class PublicidadeController extends Controller
     public function destroy($id)
     {
         //
+        Publicidade::findOrFail($id)->delete();
+        return redirect()->route('')->with(['msgDelete' => 'Publicidade eliminada com sucesso']);
     }
 }

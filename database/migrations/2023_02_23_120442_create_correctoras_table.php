@@ -27,7 +27,7 @@ return new class extends Migration
         });
         Schema::table('correctoras', function (Blueprint $table){
 
-            $table->foreign('id_user')->reference('id')->on('users')->onDelete('cascade');
+            $table->foreign('id_user')->references('id')->on('users')->onDelete('cascade');
 
         });
     }
