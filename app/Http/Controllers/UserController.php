@@ -6,6 +6,7 @@ use App\Models\Agente;
 use App\Models\Construtora;
 use App\Models\Correctora;
 use App\Models\Funcionario;
+use App\Models\Cliente;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -111,7 +112,7 @@ class UserController extends Controller
         if($correctora->save()){
             return redirect()->route('/')->with(['Mensagem' => 'Correctora Cadastrado com sucesso'], Response::HTTP_OK);
         }else{
-            return redirect('/')->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return redirect()->back()->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR);
         } 
     }
 
@@ -186,7 +187,6 @@ class UserController extends Controller
                         }
                         
                        //-------------------------upload de foto do documento de identificacao--------------------------------
-                        //-------------------------upload de foto do documento de identificacao--------------------------------
                         if($request->hashFile('foto_doc') && $request->file('foto_doc')->isValid()){
                             $requestFoto = $request->foto_doc;
                             $extension = $requestFoto->extension();
@@ -237,7 +237,6 @@ class UserController extends Controller
             }
             
            //-------------------------upload de foto do documento de identificacao--------------------------------
-            //-------------------------upload de foto do documento de identificacao--------------------------------
             if($request->hashFile('foto_doc') && $request->file('foto_doc')->isValid()){
                 $requestFoto = $request->foto_doc;
                 $extension = $requestFoto->extension();
@@ -351,6 +350,7 @@ class UserController extends Controller
         $construtora = new Construtora();
         $construtora->num_alvara = $request->input('num_alvara');
         $construtora->num_nuit = $request->input('num_nuit');
+
         //-------------------------upload de Alvara--------------------------------
        if($request->hashFile('doc_alvara') && $request->file('doc_alvara')->isValid()){
             $requestAlvara = $request->doc_alvara;
@@ -375,7 +375,7 @@ class UserController extends Controller
         if($construtora->save()){
             return redirect()->route('/')->with(['Mensagem' => 'Construtora Cadastrada com sucesso'], Response::HTTP_OK);
         }else{
-            return redirect('/')->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            return redirect()->back()->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR); 
 
         }
     }
@@ -790,11 +790,278 @@ class UserController extends Controller
  
  /**
  * -------------------------------------------------------------------------------------------------------------------------------------------------------
- * ---------------------------------------------------------------------Funcionarios ---------------------------------------------------------------------
+ * --------------------------------------------------------------------- Cliente ---------------------------------------------------------------------
  * -------------------------------------------------------------------------------------------------------------------------------------------------------
  */  
 
    /**
+     * Função para trazer todos Clientes.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexCliente(){
+
+        $search = request('search');
+
+        if ($search) {
+
+            $clientes = User::where([
+                   ['user_tipo','cliente'],['name', 'like', '%' .$search. '%']
+            ])->get();
+        }else{
+            $clientes = User::all()->where('user_tipo','cliente');
+        }
+        return view('', ['clientes' => $clientes, 'search' => $search]);
+    }
+
+     /**
+     * Função para carregar formulario de cadastro de um cliente.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function createCliente()
+    {
+        return view('/');
+    }
+
+    /**
+     * Função para salvar dados de um clientes na base de dados.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function storeCliente(Request $request){
+        $user = new User();
+        $user->user_tipo = 'cliente';
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        $user->username = $request->email;
+        $pass = $request->password;
+        $confirPass = $request->confirm_password;
+        if($pass == $confirPass){
+            if(strlen($pass) >= 6){
+            $user->password = Hash ::make($request->password);
+            }else{
+                return redirect()->back()->with(['msgErrorPass' => 'A palavra passe de ter no minimo 6 digitos']);
+            }
+        }else{
+            return redirect()->back()->with(['msgPass' => 'A palavra passe nao coincide']);
+        }
+          
+        $email = User::all()->where('email', '=', $user->email)->count();
+        if($email > 0){
+            $addCorrectora['success'] = false;
+            $addCorrectora['mensagem'] = 'Esse email ja esta registado no sistema!';
+            return response()->json($addCorrectora);
+        }
+        $user->save();
+        $id_user = $user->id;
+
+        $cliente = new Cliente();
+        $cliente->endereco = $request->input('endereco');
+        $cliente->telefone = $request->telefone;
+        $cliente->id_user = $id_user;
+
+        if($cliente->save()){
+            return redirect()->route('/')->with(['Mensagem' => 'Cliente cadastrado com sucesso'], Response::HTTP_OK);
+        }else{
+            return redirect()->back()->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR); 
+
+        }
+    }
+
+     /**
+     * Função para visualizar dados de um cliente.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function showCliente($id){
+        $user = User::findOrFail($id);
+        $clientes = $user->funcionarioUser()->get();
+        return view('/', ['clientes' => $clientes]);
+    }
+
+
+      /**
+     * Função para carregar o perfil do Cliente.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function perfilCliente($id){
+
+        $user = User::findOrFail($id);
+        $cliente = $user->funcionarioUser()->get();
+
+        return view('', ['cliente' => $cliente]);
+    }
+
+
+    /**
+     * Função para trazer formulario para editar dados de um cliente.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function editCliente($id){
+        $user = User::findOrFail($id);
+        $clientes = $user->agenteUser()->get();
+        return view('', ['clientes' => $clientes]);
+    }
+
+    /**
+     * Função para actualizar dados de um cliente.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function updateCliente(Request $request){
+        $user = User::findOrFail($request->id);
+        $cliente = $user->clienteUser;
+        $userPassword = $user->password;
+
+        if($request->password_actual != ""){
+            $newPass = $request->password;
+            $confirPass = $request->confirm_password;
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            if(Hash::check($request->password_actual, $userPassword)){
+                if($newPass == $confirPass){
+                    if(strlen($newPass) >= 6){
+                        $user->password = Hash::make($request->password);
+                        DB::table('users')->where('id', $user->id)->update(['password' => $user->password]);
+                        $data = $request->all('name', 'email', 'username');
+                       
+                        $user->update($data);
+                        DB::table('clientes')->where('id', $cliente->id)->update(['telefone' => $telefone]);
+                        DB::table('clientes')->where('id', $cliente->id)->update(['endereco' => $endereco]);
+
+                        return redirect()->route('')->with(['msgPassSucess' => 'A palavra passe foi combinada correctamente']);
+                    }else{
+                        return redirect()->back()->with(['msgErrorPass' => 'A palavra passe deve ter no minimo 6 digitos']);
+                    }
+                }else{
+                    return redirect()->back()->with(['msgIncorrecta' => 'Por favor verifique a palavra passe nao coincide']);
+                }
+
+            }else{
+                return redirect()->back()->with(['password_actual' => 'A palavra passe actual nao coincide com a nova']);
+            }
+        }else{
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            DB::table('users')->where('id', $user->id)->update(['password' => $user->password]);
+            $data = $request->all('name', 'email', 'username');
+            $user->update($data);
+            DB::table('clientes')->where('id', $cliente->id)->update(['telefone' => $telefone]);
+            DB::table('clientes')->where('id', $cliente->id)->update(['endereco' => $endereco]);
+
+            return redirect()->route('')->with(['msgSucess' => 'Dados actualizados com sucesso!']);
+        }
+        return redirect()->back()->with(['msgError' => 'Erro ao actualizar os dados']);
+
+    }
+
+          /**
+     * Função para trazer formulario para editar dados de um cliente.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function editPerfilCliente($id){
+        $user = User::findOrFail($id);
+        $clientes = $user->clienteUser()->get();
+        return view('', ['clientes' => $clientes]);
+    }
+
+    public function updatePerfilclientes(Request $request){
+        $user = auth()->user();
+        $cliente = $user->clienteUser;
+        $userPassword = $user->password;
+
+        if($request->password_actual != ""){
+            $newPass = $request->password;
+            $confirPass = $request->confirm_password;
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $data_nascimento = $request->data_nascimento;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            if(Hash::check($request->password_actual, $userPassword)){
+                if($newPass == $confirPass){
+                    if(strlen($newPass) >= 6){
+                        $user->password = Hash::make($request->password);
+                        DB::table('users')->where('id', $user->id)->update(['password' => $user->password]);
+                        DB::table('users')->where('id', $user->id)->update(['name' => $name]);
+                        DB::table('users')->where('id', $user->id)->update(['email' => $email]);
+                        DB::table('users')->where('id', $user->id)->update(['username' => $username]);
+                        DB::table('clientes')->where('id', $cliente->id)->update(['telefone' => $telefone]);
+                        DB::table('clientes')->where('id', $cliente->id)->update(['endereco' => $endereco]);
+
+                        return redirect()->route('')->with(['msgPassSucess' => 'A palavra passe foi combinada correctamente']);
+                    }else{
+                        return redirect()->back()->with(['msgErrorPass' => 'A palavra passe deve ter no minimo 6 digitos']);
+                    }
+                }else{
+                    return redirect()->back()->with(['msgIncorrecta' => 'Por favor verifique a palavra passe nao coincide']);
+                }
+
+            }else{
+                return redirect()->back()->with(['password_actual' => 'A palavra passe actual nao coincide com a nova']);
+            }
+        }else{
+            $name = $request->name;
+            $email = $request->email;
+            $username = $request->username;
+            $endereco = $request->endereco;
+            $telefone = $request->telefone;
+            DB::table('users')->where('id', $user->id)->update(['password' => $user->password]);
+            DB::table('users')->where('id', $user->id)->update(['name' => $name]);
+            DB::table('users')->where('id', $user->id)->update(['email' => $email]);
+            DB::table('users')->where('id', $user->id)->update(['username' => $username]);
+            DB::table('clientes')->where('id', $cliente->id)->update(['telefone' => $telefone]);
+            DB::table('clientes')->where('id', $cliente->id)->update(['endereco' => $endereco]);
+
+            return redirect()->route('')->with(['msgSucess' => 'Dados actualizados com sucesso!']);
+        }
+        return redirect()->back()->with(['msgError' => 'Erro ao actualizar os dados']);
+    }
+
+    /**
+     * Função para eliminar um cliente.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroyCliente($id){
+        $user = User::findOrFail($id);
+        $cliente = $user->clienteUser()->get();
+        $cliente->delete();
+        return redirect()->route('/')->with(['Mensagem' => 'Cliente eliminada com sucesso', Response::HTTP_OK]);
+    }
+
+/**
+ * -------------------------------------------------------------------------------------------------------------------------------------------------------
+ * --------------------------------------------------------------------- Fim Cliente -----------------------------------------------------------------
+ * -------------------------------------------------------------------------------------------------------------------------------------------------------
+ */  
+
+ /**
+ * -------------------------------------------------------------------------------------------------------------------------------------------------------
+ * --------------------------------------------------------------------- Funcionario -----------------------------------------------------------------
+ * -------------------------------------------------------------------------------------------------------------------------------------------------------
+ */ 
+
+  /**
      * Função para trazer todos funcionarios.
      *
      * @return \Illuminate\Http\Response
@@ -889,13 +1156,13 @@ class UserController extends Controller
         if($funcionario->save()){
             return redirect()->route('/')->with(['Mensagem' => 'Funcionario cadastrado com sucesso'], Response::HTTP_OK);
         }else{
-            return redirect('/')->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            return redirect()->back()->with(['Mensagem' => 'Erro no cadastro'], Response::HTTP_INTERNAL_SERVER_ERROR); 
 
         }
     }
 
      /**
-     * Função para visualizar dados de uma Agencia.
+     * Função para visualizar dados de um Funcionario.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -923,19 +1190,19 @@ class UserController extends Controller
 
 
     /**
-     * Função para trazer formulario para editar dados de uma Agencia.
+     * Função para trazer formulario para editar dados de um funcionario.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function editFuncionario($id){
         $user = User::findOrFail($id);
-        $funcionarios = $user->agenteUser()->get();
+        $funcionarios = $user->funcionarioUser()->get();
         return view('editagencia', ['funcionarios' => $funcionarios]);
     }
 
     /**
-     * Função para actualizar dados de uma Agencia.
+     * Função para actualizar dados de um funcionario.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
@@ -1044,14 +1311,14 @@ class UserController extends Controller
     }
 
           /**
-     * Função para trazer formulario para editar dados de uma Agencia.
+     * Função para trazer formulario para editar dados de um funcionario.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function editPerfilFuncionario($id){
         $user = User::findOrFail($id);
-        $funcionarios = $user->agenteUser()->get();
+        $funcionarios = $user->funcionarioUser()->get();
         return view('editagencia', ['funcionarios' => $funcionarios]);
     }
 
@@ -1155,7 +1422,7 @@ class UserController extends Controller
     }
 
     /**
-     * Função para eliminar uma Agencia.
+     * Função para eliminar um funcionario.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
@@ -1169,7 +1436,7 @@ class UserController extends Controller
 
 /**
  * -------------------------------------------------------------------------------------------------------------------------------------------------------
- * ---------------------------------------------------------------------fim Funcionarios -----------------------------------------------------------------
+ * --------------------------------------------------------------------- Fim Funcionario -----------------------------------------------------------------
  * -------------------------------------------------------------------------------------------------------------------------------------------------------
  */  
 

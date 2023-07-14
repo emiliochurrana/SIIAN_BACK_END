@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('login');
 });
 
 //Rotas login
@@ -83,3 +84,8 @@ Route::put('/publicidade/update/{id}', [PublicidadeController::class, 'update'])
 Route::post('/publicidade/like/{id}', [PublicidadeController::class, 'likePublicidade'])->name('likepublicidade');
 Route::delete('/publicidade/deslike/{id}', [PublicidadeController::class, 'deslikePublicidade'])->name('deslikepublicidade');
 Route::delete('/publicidade/delete/{id}', [PublicidadeController::class, 'destroy'])->name('deletepublicidade');
+
+//Rotas Chat
+Route::get('/chat/login', [ChatController::class, 'login'])->name('login');
+route::get('/chat/signup', [ChatController::class, 'signup'])->name('signup');
+

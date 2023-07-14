@@ -15,10 +15,15 @@ return new class extends Migration
     {
         Schema::create('chats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_user')->constrained('users');
-            $table->text('mensagem');
-            $table->string('nome_user');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('convo_id');
+            $table->text('message');
+            $table->boolean('status');
             $table->timestamps();
+        });
+        Schema::table('chats', function (Blueprint $table){
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('convo_id')->references('id')->on('threads')->onDelete('cascade');
         });
     }
 

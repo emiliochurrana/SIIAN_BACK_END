@@ -12,15 +12,20 @@ class Chat extends Model
 
     protected $table = 'chats';
 
-    protected $fillabel = [
-        'id_user',
+    protected $fillabele = [
+        'convo_id',
+        'user_id',
         'mensagem',
-        'nome_user'
+        'status'
     ];
 
     public function userChat(): BelongsTo{
 
-        return $this->belongsTo(User::class, 'id_user', 'id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function threadChat(): BelongsTo{
+        return $this->belongsTo(Thread::class, 'convo_id', 'id');
     }
 
 }

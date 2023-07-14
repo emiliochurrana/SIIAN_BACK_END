@@ -1,0 +1,3 @@
+2023-07-05 18:13:33.167 [pool-3-thread-1] INFO  com.rs.mv.mvvs.client.catalog.from.scan.CurrentPathScanner - [client:400205]scan file in current open file directory(C:/xampp/htdocs/SIIAN_BACK_END/routes)
+2023-07-05 18:14:03.835 [pool-3-thread-1] INFO  com.rs.mv.mvvs.client.catalog.from.scan.CurrentPathScanner - [client:400205]scan file in current open file directory(C:/xampp/htdocs/SIIAN_BACK_END/app/Http/Controllers)
+2023-07-05 18:20:03.315 [pool-3-thread-1] INFO  com.rs.mv.mvvs.client.catalog.from.scan.CurrentPathScanner - [client:400205]scan file in current open file directory(C:/xampp/htdocs/SIIAN_BACK_END/app/Http/Controllers)

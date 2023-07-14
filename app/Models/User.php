@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -43,6 +44,11 @@ class User extends Authenticatable
     public function construtoraUser(): HasOne{
 
         return $this->hasOne(Construtora::class, 'id_user', 'id');
+    }
+
+    public function clienteUser(): HasOne{
+
+        return $this->hasOne(Cliente::class, 'id_user', 'id');
     }
 
     public function anuncioCorrectora(): HasMany{
