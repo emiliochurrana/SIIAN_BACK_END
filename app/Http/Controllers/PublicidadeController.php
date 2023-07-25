@@ -51,52 +51,56 @@ class PublicidadeController extends Controller
     public function store(Request $request)
     {
         //
-        $publicidade = new Publicidade();
-        $user = auth()->user();
-        $publicidade->id_user = $user->id;
-        $publicidade->tipo_publicidade = $request->input('tipo_publicidade');
-        $publicidade->espaco = $request->input('espaco');
-        
-          //-----------------------upload logotipo -------------------------------------------
-          if($request->hasFile('logotipo') && $request->file('logotipo')->isValid()){
+        $userauth = auth()->user()->user_tipo;
+        if($userauth == 'construtora'){
+            $publicidade = new Publicidade();
+            $user = auth()->user();
+            $publicidade->id_user = $user->id;
+            $publicidade->tipo_publicidade = $request->input('tipo_publicidade');
+            $publicidade->espaco = $request->input('espaco');
+            
+            //-----------------------upload logotipo -------------------------------------------
+            if($request->hasFile('logotipo') && $request->file('logotipo')->isValid()){
 
-            $requestImagem =$request->logotipo;
-            $extension = $requestImagem->extension();
-            $imagemName=md5($requestImagem->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $requestImagem->move(public_path('ficheiros/publicidades/logotipos'), $imagemName);
-            $publicidade->logotipo = $imagemName;
-        }
-         //-----------------------upload imagem -------------------------------------------
-         if($request->hasFile('imagem') && $request->file('imagem')->isValid()){
+                $requestImagem =$request->logotipo;
+                $extension = $requestImagem->extension();
+                $imagemName=md5($requestImagem->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $requestImagem->move(public_path('ficheiros/publicidades/logotipos'), $imagemName);
+                $publicidade->logotipo = $imagemName;
+            }
+            
+            //-----------------------upload imagem -------------------------------------------
+            if($request->hasFile('imagem') && $request->file('imagem')->isValid()){
 
-            $requestImagem =$request->imagem;
-            $extension = $requestImagem->extension();
-            $imagemName=md5($requestImagem->imagem->getClientOriginalName() . strtotime("now")) . "." . $extension;
-            $request->imagem->move(public_path('ficheiros/publicidades/imagens'), $imagemName);
-            $publicidade->imagem = $imagemName;
-        }
+                $requestImagem =$request->imagem;
+                $extension = $requestImagem->extension();
+                $imagemName=md5($requestImagem->imagem->getClientOriginalName() . strtotime("now")) . "." . $extension;
+                $request->imagem->move(public_path('ficheiros/publicidades/imagens'), $imagemName);
+                $publicidade->imagem = $imagemName;
+            }
 
-        $publicidade->imovel_servico = $request->input('imovel_servico');
-        $publicidade->empreendimento = $request->input('empreendimento');
-        $publicidade->descricao = $request->input('descricao');
-        $publicidade->telefone = $request->input('telefone');
-        $publicidade->link = $request->input('link');
-        $publicidade->tipo_promocao = $request->input('tipo_promocao');
-        $publicidade->promocao = $request->input('promocao');
-        $publicidade->paragem = $request->input('paragem');
-        $publicidade->tempo = $request->input('tempo');
-        $publicidade->informacao_legal = $request->input('informacao_legal');
-        $publicidade->instituicao = $request->input('instituicao');
-        $publicidade->validade = $request->input('validade');
-        $publicidade->limite_financeiro = $request->input('limite_financeiro');
-        $publicidade->taxa_juro = $request->input('taxa_juro');
-        $publicidade->primeira_prestacao = $request->input('primeira_prestacao');
+            $publicidade->imovel_servico = $request->input('imovel_servico');
+            $publicidade->empreendimento = $request->input('empreendimento');
+            $publicidade->descricao = $request->input('descricao');
+            $publicidade->telefone = $request->input('telefone');
+            $publicidade->link = $request->input('link');
+            $publicidade->tipo_promocao = $request->input('tipo_promocao');
+            $publicidade->promocao = $request->input('promocao');
+            $publicidade->paragem = $request->input('paragem');
+            $publicidade->tempo = $request->input('tempo');
+            $publicidade->informacao_legal = $request->input('informacao_legal');
+            $publicidade->instituicao = $request->input('instituicao');
+            $publicidade->validade = $request->input('validade');
+            $publicidade->limite_financeiro = $request->input('limite_financeiro');
+            $publicidade->taxa_juro = $request->input('taxa_juro');
+            $publicidade->primeira_prestacao = $request->input('primeira_prestacao');
 
-        if($publicidade->save()){
+            if($publicidade->save()){
 
-            return redirect()->route('/')->with('msg', 'Publicidade fixada com sucesso!');
-        }else{
-            return redirect()->back()->with('msg', 'Erro ao fixar a publicidade');
+                return redirect()->route('/')->with('msg', 'Publicidade fixada com sucesso!');
+            }else{
+                return redirect()->back()->with('msg', 'Erro ao fixar a publicidade');
+            }
         }
     }
 

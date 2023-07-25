@@ -1,1 +1,1 @@
-2023-07-14 08:13:10.653 [pool-3-thread-1] INFO  com.rs.mv.mvvs.client.catalog.from.scan.CurrentPathScanner - [client:400205]scan file in current open file directory(C:/xampp/htdocs/SIIAN_BACK_END/app/Models)
+2023-07-25 08:46:20.816 [pool-3-thread-1] INFO  com.rs.mv.mvvs.client.catalog.from.scan.CurrentPathScanner - [client:400205]scan file in current open file directory(C:/xampp/htdocs/SIIAN_BACK_END/database/migrations)

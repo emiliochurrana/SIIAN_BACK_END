@@ -16,7 +16,6 @@ return new class extends Migration
         Schema::create('anuncios', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_empresa');
-            $table->unsignedBigInteger('id_servico');
             $table->string('tipo_conta');
             $table->string('tipo_servico');
             $table->string('tipo_arrenda');
@@ -63,7 +62,6 @@ return new class extends Migration
         Schema::table('anuncios', function (Blueprint $table) {
 
             $table->foreign('id_empresa')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('id_servico')->references('id')->on('servicos')->onDelete('cascade');
         });
 
     }
