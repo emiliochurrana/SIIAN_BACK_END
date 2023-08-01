@@ -18,16 +18,27 @@ class AuthController extends Controller
         {
           $userLog = User::all()->where('email', '=', $request->input('email'))->first();
           if($userLog){
-            if($userLog->tipo_user == 'proprietario'){
+            if($userLog->tipo_user == 'Agente'){
                 $credenciais = [
                     'username' => $request->input('username'),
                     'password' => $request->input('password')
                 ];
                 if(Auth::attempt($credenciais)){
-                    $user = Auth::user();
+                    /*$user = Auth::user();
                     session(['user' => $user]);
                     $login['success'] = true;
+                    return response()->json($login);*/
+                    $user = Auth::user();
+                    $token = $user->createToken('SECRET_TOKEN');
+
+                    $login['success'] = true;
+                    $login['token'] = $token->plainTextToken;
+                    $login['user'] = $user;
+
+                    $login['success'] = true;
+                    $login['mensagem'] = 'Logado com sucesso';
                     return response()->json($login);
+
                 }
                 $login['success'] = false;
                 $login['mensagem'] = 'Dados invalidos';
@@ -41,13 +52,24 @@ class AuthController extends Controller
                         'password' => $request->input('password')
                     ];
                     if(Auth::attempt($credenciais)){
-                        $user = Auth::user();
+                        /*$user = Auth::user();
                         session(['user' => $user]);
                         $login['success'] = true;
+                        return response()->json($login);*/
+                        $user = Auth::user();
+                        $token = $user->createToken('SECRET_TOKEN');
+
+                        $login['success'] = true;
+                        $login['token'] = $token->plainTextToken;
+                        $login['user'] = $user;
+
+                        $login['success'] = true;
+                        $login['mensagem'] = 'Logado com sucesso';
                         return response()->json($login);
                     }
                     $login['success'] = false;
                     $login['mensagem'] = 'Dados invalidos';
+                    return response()->json($login);
                 }
                 
           }
